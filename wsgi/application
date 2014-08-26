@@ -1,0 +1,91 @@
+#@+leo-ver=5-thin
+#@+node:2014fall.20140821113240.3137: * @file application
+########################### 1. 導入啟動 cherrypy, 所在目錄, 物件所需模組
+#@@language python
+#@@tabwidth -4
+
+#@+<<declarations>>
+#@+node:2014fall.20140821113240.3138: ** <<declarations>>
+import cherrypy
+import os
+import cmsimply
+import pygroup
+# for createdb 
+import pymysql
+
+########################### 2. 設定近端與遠端目錄
+# 確定程式檔案所在目錄, 在 Windows 有最後的反斜線
+_curdir = os.path.join(os.getcwd(), os.path.dirname(__file__))
+# 設定在雲端與近端的資料儲存目錄
+if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
+    # 表示程式在雲端執行
+    download_root_dir = os.environ['OPENSHIFT_DATA_DIR']
+    data_dir = os.environ['OPENSHIFT_DATA_DIR']
+    template_root_dir = os.environ['OPENSHIFT_REPO_DIR']+"/wsgi/static"
+    # template_root_dir = _curdir + "/static"
+else:
+    # 表示程式在近端執行
+    download_root_dir = _curdir + "/local_data/"
+    data_dir = _curdir + "/local_data/"
+    template_root_dir = _curdir + "/static"
+
+########################### 3. 設定根目錄與子目錄啟動
+# 利用 CDProject() class 產生案例物件
+#root = CDProject()
+# 希望從物件案例建立時, 指定資料庫與資料表的建立流程
+# 例如 root = pygroup.Pygroup(資料庫, 資料表, 其他參數)
+root = pygroup.Pygroup()
+# 導入 CMSimply 內容管理模組
+#root.cmsimply = cmsimply.CMSimply()
+# 使用命名節點中所定義的 cmsimply_group 類別
+#root.cmsimply = cmsimply_group()
+root.c = cmsimply.CMSimply()
+# 導入 Download
+root.c.download = cmsimply.Download()
+
+########################### 4. 安排啟動設定
+# 配合程式檔案所在目錄設定靜態目錄或靜態檔案
+application_conf = {
+        '/static':{
+        'tools.staticdir.on': True,
+        'tools.staticdir.dir': _curdir+"/static"},
+        '/images':{
+        'tools.staticdir.on': True,
+        'tools.staticdir.dir': data_dir+"/images"},
+        '/downloads':{
+        'tools.staticdir.on': True,
+        'tools.staticdir.dir': data_dir+"/downloads"},
+        '/brython_programs':{
+        'tools.staticdir.on': True,
+        'tools.staticdir.dir': data_dir+"/brython_programs"},
+        '/calc_programs':{
+        'tools.staticdir.on': True,
+        'tools.staticdir.dir': data_dir+"/calc_programs"},
+        '/':{
+        'tools.staticdir.on': True,
+        'tools.staticdir.dir': _curdir+"/static/openjscad"},
+        # 設定靜態 templates 檔案目錄對應
+        '/templates':{
+        'tools.staticdir.on': True,
+        'tools.staticdir.root': template_root_dir,
+        'tools.staticdir.dir': 'templates',
+        'tools.staticdir.index' : 'index.htm'
+        }
+    }
+
+########################### 5. 在近端或遠端啟動程式
+# 假如在 os 環境變數中存在 'OPENSHIFT_REPO_DIR', 表示程式在 OpenShift 環境中執行
+if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
+    # 雲端執行啟動
+    application = cherrypy.Application(root, config = application_conf)
+else:
+    # 近端執行啟動
+    '''
+    cherrypy.server.socket_port = 8083
+    cherrypy.server.socket_host = '127.0.0.1'
+    '''
+    cherrypy.quickstart(root, config = application_conf)
+#@-<<declarations>>
+#@+others
+#@-others
+#@-leo

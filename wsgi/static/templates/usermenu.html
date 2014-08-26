@@ -1,0 +1,30 @@
+##encoding: utf-8
+## 取得 user 與 menu 等兩個變數資料
+## 兩個 pound signs 在 Mako 語法中為註解行
+## 多行註解則使用
+<%doc>
+    這是註解
+    使用 <%! %> 表示在模組層次運作的 Python 程式碼, 可以用來 import 模組或定義相關的函式或物件
+</%doc>
+
+<html>
+        <head>
+                <title>Cherrypy Mako usermenu.html</title>
+        </head>
+        <body>
+<style type="text/css" media="all">
+@import "/templates/style/base.css";
+</style>  
+## 以下為一般的 Python 程式碼, 若是一般的運作則需要將 rows 數列傳進套稿中, 以便 render 頁面
+<%
+# 這裡可以是 python 程式, 變數在 html 以 ${變數名稱} 呼叫
+%>
+使用者: ${user} <br />
+## 特別注意 mako for 迴圈的用法, 要用 endfor 關門
+% for i in range(len(menu)):
+    <br /><a href="${menu[i]}">${menu[i]}</a>
+% endfor
+
+##<%include file="menulink.html"/>
+        </body>
+</html>

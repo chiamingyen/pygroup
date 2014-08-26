@@ -1,0 +1,19 @@
+##encoding: utf-8
+## 取得 user 變數資料
+## 兩個 pound signs 在 Mako 語法中為註解行
+## 多行註解則使用
+<%doc>
+    這是註解
+    使用 <%! %> 表示在模組層次運作的 Python 程式碼, 可以用來 import 模組或定義相關的函式或物件
+</%doc>
+<%
+output = "請輸入搜尋關鍵字:"
+output += '''
+<form method='post' action='tasklist'>
+keyword:<input type='keyword' name='keyword'>
+'''
+output += '''<input type='submit' value='search'>
+</form><br />
+'''
+%>
+${output}

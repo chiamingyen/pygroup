@@ -1,0 +1,37 @@
+##encoding: utf-8
+## 取得 user 與 title 等兩個變數資料
+## 兩個 pound signs 在 Mako 語法中為註解行
+## 多行註解則使用
+<%doc>
+    這是註解
+    使用 <%! %> 表示在模組層次運作的 Python 程式碼, 可以用來 import 模組或定義相關的函式或物件
+</%doc>
+<%!
+import cgi
+%>
+<html>
+        <head>
+                <title>Pygroup editconfigform.html</title>
+</head><body>
+<style type="text/css" media="all">
+@import "/templates/style/base.css";
+</style>
+<%
+output = "<br /><br />使用者:"+user+"<br /><br />"
+if id != 0:
+    output += "以下將編輯系統的設定檔案資料<br /><br />"
+output += '''
+<form method='post' action='editconfig'>
+管理者密碼:<input type='type' name='password' value="'''+saved_password+'''">
+<input type='hidden' name='password2' value="'''+saved_password+'''"><br />
+adsense:<input type='name' name='adsense' value="'''+adsense+'''"><br />
+anonymous:<input type='name' name='anonymous' value="'''+anonymous+'''"><br />
+'''
+output += '''
+<input type='submit' value='edit'>
+</form>
+'''
+%>
+${output}
+
+
