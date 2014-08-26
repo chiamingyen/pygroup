@@ -262,11 +262,11 @@ class Pygroup(object):
         ip = self.client_ip()
         now = datetime.datetime.now(pytz.timezone('Asia/Taipei')).strftime('%Y-%m-%d %H:%M:%S')
         content = content.replace('\n', '')
-        invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script']
+        invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot']
         content = self.clean_html(content, invalid_tags)
 
         time_elapsed = round(time.time() - start_time, 5)
-        Task.create(owner=owner, name=str(name), type=type, time=str(now)+"_"+str(time_elapsed)+"秒", follow=follow, content=str(content), ip=str(ip))
+        Task.create(owner=owner, name=str(name), type=type, time=str(now), follow=follow, content=str(content), ip=str(ip))
 
         raise cherrypy.HTTPRedirect("tasklist")
     #@+node:2014fall.20140821113240.3115: *3* index (tasklist)
@@ -732,6 +732,7 @@ class Pygroup(object):
     def login(self):
         # 當使用者要求登入時, 將 user session 清除
         cherrypy.session["user"] = ""
+        saved_password, adsense, anonymous, mail_suffix, site_closed = self.parse_config(filename="pygroup_config")
         if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
             output = '''
         <html>
@@ -740,15 +741,18 @@ class Pygroup(object):
             if ((location.href.search(/http:/) != -1) && (location.href.search(/login/) != -1))     window.location= 'https://' + location.host + location.pathname + location.search;
             </script>
         </head>
+        <body>
     '''
         else:
             output = '''
         <html>
         <head>
         </head>
+        <body>
     '''
+        if site_closed == "yes":
+            output += "抱歉!目前網站關閉中, 所有用戶將暫時無法登入.<br /><br />"
         output += '''
-    <body>
     請利用 Gmail 帳號登入<br /><br />
     <form method='post' action='logincheck'>
     Account:<input type='account' name='account'><br />
@@ -772,7 +776,7 @@ class Pygroup(object):
                     cherrypy.session['user'] = "admin"
                     raise cherrypy.HTTPRedirect("/")
                 else:
-                    return "login failed."
+                    return "login failed.<br /><a href='/'>Go to main page</a><br />"
             else:
                 # 一般帳號查驗
                 if site_closed == "yes":
@@ -791,7 +795,7 @@ class Pygroup(object):
                         #若登入成功, 則離開前跳到根目錄
                     except:
                         server.quit()
-                        return "login failed."
+                        return "login failed.<br /><a href='/'>Go to main page</a><br />"
         else:
             raise cherrypy.HTTPRedirect("login")
         raise cherrypy.HTTPRedirect("/")
@@ -810,7 +814,7 @@ class Pygroup(object):
         old_password, old_adsense, old_anonymous, old_mail_suffix, old_site_closed = self.parse_config(filename=filename)
         if adsense == None or password == None or password2 != old_password or password == '':
             # 傳回錯誤畫面
-            return "error"
+            return "error<br /><a href='/'>Go to main page</a><br />"
         else:
             if password == password2 and password == old_password:
                 hashed_password = old_password
@@ -826,7 +830,7 @@ class Pygroup(object):
                 site_closed:"+site_closed+"\n")
             file.close()
             # 傳回設定檔案已經儲存
-            return "config file saved"
+            return "config file saved<br /><a href='/'>Go to main page</a><br />"
     #@+node:2015.20140825203447.2080: *3* editconfigform
     @cherrypy.expose
     def editconfigform(self, *args, **kwargs):
@@ -903,7 +907,7 @@ class Pygroup(object):
     @cherrypy.expose
     def logout(self, *args, **kwargs):
         cherrypy.session.delete()
-        return "已經登出!"
+        return "已經登出!<br /><a href='/'>Go to main page</a><br />"
         #raise cherrypy.HTTPRedirect("")
     #@+node:2014fall.20140821113240.3129: *3* taskeditform
     @cherrypy.expose
@@ -940,6 +944,11 @@ class Pygroup(object):
         result = query.execute()
         data = result.one()
         now = strftime("%Y-%m-%d %H:%M:%S", localtime())
+        # 試著過濾資料
+        content = content.replace('\n', '')
+        invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot']
+        content = self.clean_html(content, invalid_tags)
+        
         output = "user:"+user+", owner:"+data.owner+"<br /><br />"
         if user != data.owner:
             if  user != "admin":
@@ -952,7 +961,8 @@ class Pygroup(object):
                 name:'''+name+'''<br />
                 type:'''+type+'''<br />
                 time:'''+str(now)+'''<br />
-                content:'''+content+'''<br />
+                content:'''+content+'''<br /><br />
+                <a href='/'>Go to main page</a><br />
     '''
         else:
             query = Task.at(int(id)).update(type=type, name=name, content=content, time=str(now))
@@ -962,7 +972,8 @@ class Pygroup(object):
             name:'''+name+'''<br />
             type:'''+type+'''<br />
             time:'''+str(now)+'''<br />
-            content:'''+content+'''<br />
+            content:'''+content+'''<br /><br />
+            <a href='/'>Go to main page</a><br />
     '''
         return output
     #@+node:2014fall.20140821113240.3131: *3* taskdeleteform
@@ -1067,13 +1078,16 @@ class Pygroup(object):
                 # 再刪除所有對應子緒
                 query = Task.where(follow=int(id)).delete()
                 query.execute()
-                output += "所有序列資料已經刪除!<br />"
+                output += '''所有序列資料已經刪除!<br /><br />
+                <a href='/'>Go to main page</a><br />
+    '''
             else:
                 # 表示資料為子緒
                 query = Task.at(int(id)).delete()
                 query.execute()
-                output += "資料已經刪除!<br />"
-
+                output += '''資料已經刪除!<br /><br />
+                <a href='/'>Go to main page</a><br />
+    '''
         return output
     #@+node:2014fall.20140821113240.3133: *3* tasksearchform
     # 不允許使用者直接呼叫 tasksearchform
