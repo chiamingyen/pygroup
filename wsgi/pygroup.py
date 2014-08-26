@@ -264,7 +264,7 @@ class Pygroup(object):
         ip = self.client_ip()
         now = datetime.datetime.now(pytz.timezone('Asia/Taipei')).strftime('%Y-%m-%d %H:%M:%S')
         content = content.replace('\n', '')
-        invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot']
+        invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
         content = self.clean_html(content, invalid_tags)
 
         time_elapsed = round(time.time() - start_time, 5)
@@ -953,7 +953,7 @@ class Pygroup(object):
         content = html_parser.unescape(content)
         # 過濾資料
         content = content.replace('\n', '')
-        invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot']
+        invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
         content = self.clean_html(content, invalid_tags)
         
         output = "user:"+user+", owner:"+data.owner+"<br /><br />"
