@@ -264,8 +264,10 @@ class Pygroup(object):
         ip = self.client_ip()
         now = datetime.datetime.now(pytz.timezone('Asia/Taipei')).strftime('%Y-%m-%d %H:%M:%S')
         content = content.replace('\n', '')
-        invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
-        content = self.clean_html(content, invalid_tags)
+        #invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
+        #content = self.clean_html(content, invalid_tags)
+        valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol']
+        content = self.html_filter(content, valid_tags)
 
         time_elapsed = round(time.time() - start_time, 5)
         Task.create(owner=owner, name=str(name), type=type, time=str(now), follow=follow, content=str(content), ip=str(ip))
@@ -356,6 +358,22 @@ class Pygroup(object):
         for tag in invalid_tags: 
             for match in soup.findAll(tag):
                 match.replaceWithChildren()
+        return soup
+
+    #@+node:2015.20140826221446.2092: *3* html_filter
+    # valid_tags = ['a', 'br', 'h', 'p', 'span', 'div', 'hr', 'img', 'iframe']
+    def html_filter(self, html, valid_tags):
+        soup = BeautifulSoup(html)
+        for tag in soup.findAll(True):
+            if tag.name not in valid_tags:
+                for i, x in enumerate(tag.parent.contents):
+                    if x == tag: break
+                else:
+                    #print "Can't find", tag, "in", tag.parent
+                    continue
+                for r in reversed(tag.contents):
+                    tag.parent.insert(i, r)
+                tag.extract()
         return soup
     #@+node:2014fall.20140821113240.3117: *3* client_ip
     def client_ip(self):
@@ -949,12 +967,14 @@ class Pygroup(object):
         
         # Python 3.x:
         #import html.parser
-        html_parser = html.parser.HTMLParser()
-        content = html_parser.unescape(content)
+        #html_parser = html.parser.HTMLParser()
+        #content = html_parser.unescape(content)
         # 過濾資料
         content = content.replace('\n', '')
-        invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
-        content = self.clean_html(content, invalid_tags)
+        #invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
+        #content = self.clean_html(content, invalid_tags)
+        valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol']
+        content = self.html_filter(content, valid_tags)
         
         output = "user:"+user+", owner:"+data.owner+"<br /><br />"
         if user != data.owner:
