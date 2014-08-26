@@ -32,6 +32,7 @@
 <v t="2014fall.20140821113240.3146" a="E"><vh>開發日誌</vh>
 <v t="2014fall.20140821113240.3147"><vh>Google Adsense 問題</vh></v>
 <v t="2015.20140824143250.2077"><vh>20140824 程式更動</vh></v>
+<v t="2014fall.20140826101705.4466"><vh>20140826</vh></v>
 </v>
 <v t="course-mde-tw.20140417093332.2027" a="E"><vh>@path wsgi</vh>
 <v t="2014spring.20140803093407.1974" a="E"><vh>@path static</vh>
@@ -133,6 +134,7 @@ http://cadp-cmsimplydemo.rhcloud.com/tasklist?id=59</t>
 <t tx="2014fall.20140821113240.3147">假如在 OpenShift 上要使用 Adsense, 唯一的方法是採用客製化符號名稱
 
 原因是 rhcloud.com 用戶眾多, 只要一個網站違反 Google 規定, 整個網域都無法使用 Adsense</t>
+<t tx="2014fall.20140826101705.4466">配置到 http://cp-2013fall.rhcloud.com/</t>
 <t tx="2014pythonE.20140422152422.1669">配合 2014cda 專案
 
 2014cdaproject@gmail.com
