@@ -917,7 +917,12 @@ class Pygroup(object):
             data = result.one()
             output = "user:"+user+", owner:"+data.owner+"<br /><br />"
             if user != data.owner:
-                return output + "error! Not authorized!"
+                if user != "admin":
+                    return output + "error! Not authorized!"
+                else:
+                    template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
+                    mytemplate = template_lookup.get_template("taskeditform.html")
+                    return mytemplate.render(user=user, id=id, data=data)
             else:
                 template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
                 mytemplate = template_lookup.get_template("taskeditform.html")
@@ -937,7 +942,18 @@ class Pygroup(object):
         now = strftime("%Y-%m-%d %H:%M:%S", localtime())
         output = "user:"+user+", owner:"+data.owner+"<br /><br />"
         if user != data.owner:
-            return "error! Not authorized!"
+            if  user != "admin":
+                return "error! Not authorized!"
+            else:
+                query = Task.at(int(id)).update(type=type, name=name, content=content, time=str(now))
+                query.execute()
+                output += '''以下資料已經更新:<br /><br />
+                owner:'''+data.owner+'''<br />
+                name:'''+name+'''<br />
+                type:'''+type+'''<br />
+                time:'''+str(now)+'''<br />
+                content:'''+content+'''<br />
+    '''
         else:
             query = Task.at(int(id)).update(type=type, name=name, content=content, time=str(now))
             query.execute()
@@ -964,7 +980,29 @@ class Pygroup(object):
             data = result.one()
             owner = data.owner
             if user != data.owner:
-                return output + "error! 非資料擁有者, Not authorized!"
+                if user != "admin":
+                    return output + "error! 非資料擁有者, Not authorized!"
+                else:
+                    if data.follow == 0:
+                        # 表示該資料為主緒資料
+                        # 資料要重新搜尋, 納入子資料
+                        query = Task.where((Task.id == id) | (Task.follow == id)).select()
+                        result = query.execute()
+                        data = result.all()
+                        output = "資料為主緒資料<br />"
+                        # 增加一個資料類型判斷, main 表資料為主緒
+                        type = "main"
+                    else:
+                        # 表示該資料為子緒資料
+                        # 直接採用 data 資料送到 taskdeleteform.html
+                        output = "資料為子緒資料<br />"
+                        # 增加一個資料類型判斷, alone 表資料為子緒
+                        type = "alone"
+                    output += "user:"+user+", owner:"+owner+"<br /><br />"
+                    template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
+                    mytemplate = template_lookup.get_template("taskdeleteform.html")
+                    # 這裡的 type 為所要刪除資料的類型, 為 main 或為 alone
+                    return mytemplate.render(user=user, id=id, data=data, type=type)
             else:
                 if data.follow == 0:
                     # 表示該資料為主緒資料
@@ -986,7 +1024,6 @@ class Pygroup(object):
                 mytemplate = template_lookup.get_template("taskdeleteform.html")
                 # 這裡的 type 為所要刪除資料的類型, 為 main 或為 alone
                 return mytemplate.render(user=user, id=id, data=data, type=type)
-
         except:
             return "error! 無法正確查詢資料, Not authorized!"
     #@+node:2014fall.20140821113240.3132: *3* taskdelete
@@ -1002,7 +1039,24 @@ class Pygroup(object):
         now = strftime("%Y-%m-%d %H:%M:%S", localtime())
         output = "user:"+user+", owner:"+data.owner+"<br /><br />"
         if user != data.owner:
-            return "error! Not authorized!"
+            if user != "admin":
+                return "error! Not authorized!"
+            else:
+                # 若資料為主緒則一併刪除子緒, 若為子緒, 則只刪除該子緒
+                if data.follow == 0:
+                    # 表示資料為主緒
+                    # 先刪除主緒
+                    query = Task.at(int(id)).delete()
+                    query.execute()
+                    # 再刪除所有對應子緒
+                    query = Task.where(follow=int(id)).delete()
+                    query.execute()
+                    output += "所有序列資料已經刪除!<br />"
+                else:
+                    # 表示資料為子緒
+                    query = Task.at(int(id)).delete()
+                    query.execute()
+                    output += "資料已經刪除!<br />"
         else:
             # 若資料為主緒則一併刪除子緒, 若為子緒, 則只刪除該子緒
             if data.follow == 0:

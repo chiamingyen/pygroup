@@ -177,10 +177,10 @@ import cgi
             myfollow = 0
             if flat == 0:
                 i = starti - 1
-                ##for task in data.paginate(int(page), int(item_per_page)):
                 for task in paginate(data, int(page), int(item_per_page)):
                     outstring +="<tr>"
-                    if user == task.owner and user != "anonymous":
+                    ## admin 管理者可以編輯或刪除任何資料
+                    if (user == task.owner and user != "anonymous") or (user == "admin") :
                         outstring += "<td>"+task.owner+"</td><td><a href='?id="+str(task.id)+"'>"+task.name+"</a></td><td>"+task.type+"</td><td>"+ \
                                     str(follow[i])+" 則回應</td><td>"+str(task.time)+"</td><td><a href='taskeditform?id="+str(task.id)+"'>edit</a> <a href='taskdeleteform?id="+str(task.id)+"'>delete</a></td>"
                     elif task.owner == "anonymous" or user == "anonymous":
