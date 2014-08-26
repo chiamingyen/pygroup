@@ -31,6 +31,7 @@
 <v t="course-mde-tw.20140422171455.1745"><vh>Github 倉儲與 OpenShift 同步</vh></v>
 <v t="2014fall.20140821113240.3146" a="E"><vh>開發日誌</vh>
 <v t="2014fall.20140821113240.3147"><vh>Google Adsense 問題</vh></v>
+<v t="2014fall.20140826101705.4467"><vh>CMSimply 已知問題</vh></v>
 <v t="2015.20140824143250.2077"><vh>20140824 程式更動</vh></v>
 <v t="2014fall.20140826101705.4466"><vh>20140826</vh></v>
 </v>
@@ -51,10 +52,11 @@
 </v>
 </v>
 </v>
-<v t="2014fall.20140821113240.3137" a="E"><vh>@file application</vh></v>
-<v t="2014fall.20140826101705.2629" a="E"
-expanded="2014fall.20140826101705.2654,2014fall.20140826101705.2698,"><vh>@file cmsimply.py</vh></v>
-<v t="2014fall.20140821113240.3105"><vh>@file pygroup.py</vh></v>
+<v t="2014fall.20140821113240.3137"><vh>@file application</vh></v>
+<v t="2014fall.20140821113240.3105" a="E"
+expanded="2014fall.20140821113240.3108,"><vh>@file pygroup.py</vh></v>
+<v t="2014fall.20140826101705.2629"
+expanded="2014fall.20140826101705.2698,"><vh>@file cmsimply.py</vh></v>
 <v t="2014fall.20140821113240.2887"><vh>@file skylark.py</vh></v>
 </v>
 <v t="2014spring.20140726005348.1759"><vh>@edit setup.py</vh></v>
@@ -134,7 +136,22 @@ http://cadp-cmsimplydemo.rhcloud.com/tasklist?id=59</t>
 <t tx="2014fall.20140821113240.3147">假如在 OpenShift 上要使用 Adsense, 唯一的方法是採用客製化符號名稱
 
 原因是 rhcloud.com 用戶眾多, 只要一個網站違反 Google 規定, 整個網域都無法使用 Adsense</t>
-<t tx="2014fall.20140826101705.4466">配置到 http://cp-2013fall.rhcloud.com/</t>
+<t tx="2014fall.20140826101705.4466">配置到 http://cp-2013fall.rhcloud.com/
+
+步驟:
+
+建立 github 程式碼專案
+
+利用 github 程式碼網址, 新增 Python 3.3 OpenShift 應用程式
+
+在應用程式下新增 MySQL 5.5 Cartridge
+
+在近端專案新增 OpenShift 部署訊息後, 同步推向 github 與 OpenShift
+
+將 OpenShift 網址, 以別名替代後, 才能顯示 Adsense 廣告</t>
+<t tx="2014fall.20140826101705.4467">Brython 近端 import random 會有問題
+
+遠端則沒有問題</t>
 <t tx="2014pythonE.20140422152422.1669">配合 2014cda 專案
 
 2014cdaproject@gmail.com

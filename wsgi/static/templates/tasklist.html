@@ -101,7 +101,7 @@ import cgi
     total_rows = len(data)
     if total_rows == 0:
         myfollow = 0
-    outstring = "<a href=''>Go to main page</a> (<a href='?flat=1'>flat</a>)"
+    outstring = "<a href='/'>Go to main page</a> (<a href='?flat=1'>flat</a>)"
     # 假如 user 非 anonymou 則列出 logout 連結
     if user != "anonymous":
         outstring += " <a href='logout'>Logout</a> "

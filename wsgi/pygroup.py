@@ -257,7 +257,7 @@ class Pygroup(object):
     def taskaction(self, type=None, name = None, follow=0, content=None, ip=None, *args, **kwargs):
         start_time = time.time()
         owner = self.printuser()
-        if self.allow_pass() == "no":
+        if self.allow_pass(owner) == "no":
             raise cherrypy.HTTPRedirect("login")
         ip = self.client_ip()
         now = datetime.datetime.now(pytz.timezone('Asia/Taipei')).strftime('%Y-%m-%d %H:%M:%S')
@@ -897,7 +897,7 @@ class Pygroup(object):
     @cherrypy.expose
     def taskeditform(self, id=None, *args, **kwargs):
         user = self.printuser()
-        if self.allow_pass() == "no":
+        if self.allow_pass(user) == "no":
             raise cherrypy.HTTPRedirect("login")
         try:
             query = Task.at(int(id)).select()
@@ -917,7 +917,7 @@ class Pygroup(object):
     def taskedit(self, id=None, type=None, name=None, content=None, *args, **kwargs):
         # check user and data owner
         user = self.printuser()
-        if self.allow_pass() == "no":
+        if self.allow_pass(user) == "no":
             raise cherrypy.HTTPRedirect("login")
         query = Task.at(int(id)).select()
         result = query.execute()
@@ -941,7 +941,7 @@ class Pygroup(object):
     @cherrypy.expose
     def taskdeleteform(self, id=None, *args, **kwargs):
         user = self.printuser()
-        if self.allow_pass() == "no":
+        if self.allow_pass(user) == "no":
             raise cherrypy.HTTPRedirect("login")
         try:
             # 這裡要區分刪除子緒或主緒資料
@@ -982,7 +982,7 @@ class Pygroup(object):
     def taskdelete(self, id=None, type=None, name=None, content=None, *args, **kwargs):
         # check user and data owner
         user = self.printuser()
-        if self.allow_pass() == "no":
+        if self.allow_pass(user) == "no":
             raise cherrypy.HTTPRedirect("login")
         query = Task.at(int(id)).select()
         result = query.execute()
