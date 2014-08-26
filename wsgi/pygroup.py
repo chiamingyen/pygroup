@@ -54,6 +54,8 @@ from skylark import Database, Model, Field, PrimaryKey, ForeignKey
 import cgi
 # for logincheck and parse_config methods
 import hashlib
+# for unescape content
+import html.parser
 
 ########################### 2. 設定近端與遠端目錄
 # 確定程式檔案所在目錄, 在 Windows 有最後的反斜線
@@ -944,7 +946,12 @@ class Pygroup(object):
         result = query.execute()
         data = result.one()
         now = strftime("%Y-%m-%d %H:%M:%S", localtime())
-        # 試著過濾資料
+        
+        # Python 3.x:
+        #import html.parser
+        html_parser = html.parser.HTMLParser()
+        content = html_parser.unescape(content)
+        # 過濾資料
         content = content.replace('\n', '')
         invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot']
         content = self.clean_html(content, invalid_tags)
@@ -954,25 +961,25 @@ class Pygroup(object):
             if  user != "admin":
                 return "error! Not authorized!"
             else:
-                query = Task.at(int(id)).update(type=type, name=name, content=content, time=str(now))
+                query = Task.at(int(id)).update(type=type, name=name, content=str(content), time=str(now))
                 query.execute()
                 output += '''以下資料已經更新:<br /><br />
                 owner:'''+data.owner+'''<br />
                 name:'''+name+'''<br />
                 type:'''+type+'''<br />
                 time:'''+str(now)+'''<br />
-                content:'''+content+'''<br /><br />
+                content:'''+str(content)+'''<br /><br />
                 <a href='/'>Go to main page</a><br />
     '''
         else:
-            query = Task.at(int(id)).update(type=type, name=name, content=content, time=str(now))
+            query = Task.at(int(id)).update(type=type, name=name, content=str(content), time=str(now))
             query.execute()
             output += '''以下資料已經更新:<br /><br />
             owner:'''+data.owner+'''<br />
             name:'''+name+'''<br />
             type:'''+type+'''<br />
             time:'''+str(now)+'''<br />
-            content:'''+content+'''<br /><br />
+            content:'''+str(content)+'''<br /><br />
             <a href='/'>Go to main page</a><br />
     '''
         return output
