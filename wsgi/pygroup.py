@@ -275,7 +275,7 @@ class Pygroup(object):
     def index(self, page=1, item_per_page=5, id=0, flat=0, keyword=None, *args, **kwargs):
         user = self.printuser()
         # 這裡不用 self.allow_pass 原因在於需要 adsense 變數
-        saved_password, adsense, anonymous = self.parse_config(filename="pygroup_config")
+        saved_password, adsense, anonymous, mail_suffix, site_closed = self.parse_config(filename="pygroup_config")
         if user == "anonymous" and anonymous != "yes":
             raise cherrypy.HTTPRedirect("login")
         if adsense == "yes":
@@ -342,7 +342,7 @@ class Pygroup(object):
         # 其餘分頁 logic 在 mako template tasklist.html 中完成
     #@+node:2015.20140824143250.2080: *3* allow_pass
     def allow_pass(self, user="anonymous"):
-        saved_password, adsense, anonymous = self.parse_config(filename="pygroup_config")
+        password, adsense, anonymous, mail_suffix, site_closed = self.parse_config(filename="pygroup_config")
         if user == "anonymous" and anonymous != "yes":
             return "no"
         else:
@@ -762,7 +762,7 @@ class Pygroup(object):
     #@+node:2014fall.20140821113240.3127: *3* logincheck
     @cherrypy.expose
     def logincheck(self, account=None, password=None):
-        saved_password, adsense, anonymous = self.parse_config(filename="pygroup_config")
+        saved_password, adsense, anonymous, mail_suffix, site_closed = self.parse_config(filename="pygroup_config")
         if account != None and password != None:
             # 這裡要加入用戶名稱為 admin 的管理者登入模式
             if account == "admin":
@@ -775,24 +775,30 @@ class Pygroup(object):
                     return "login failed."
             else:
                 # 一般帳號查驗
-                server = smtplib.SMTP('smtp.gmail.com:587')
-                server.ehlo()
-                server.starttls()
-                try:
-                    server.login(account, password)
-                    server.quit()
-                    cherrypy.session["user"] = account
-                    #return account+" login successfully."
-                    #若登入成功, 則離開前跳到根目錄
-                except:
-                    server.quit()
-                    return "login failed."
+                if site_closed == "yes":
+                    return "抱歉!網站關閉中"
+                elif not mail_suffix in account or mail_suffix != "":
+                    return "抱歉!此類帳號不允許登入"
+                else:
+                    server = smtplib.SMTP('smtp.gmail.com:587')
+                    server.ehlo()
+                    server.starttls()
+                    try:
+                        server.login(account, password)
+                        server.quit()
+                        cherrypy.session["user"] = account
+                        #return account+" login successfully."
+                        #若登入成功, 則離開前跳到根目錄
+                    except:
+                        server.quit()
+                        return "login failed."
         else:
             raise cherrypy.HTTPRedirect("login")
         raise cherrypy.HTTPRedirect("/")
     #@+node:2015.20140825203447.2081: *3* editconfig
     @cherrypy.expose
-    def editconfig(self, password=None, password2=None, adsense=None, anonymous=None):
+    def editconfig(self, password=None, password2=None, adsense=None, anonymous=None, \
+                    mail_suffix=None, site_closed=None):
         filename = "pygroup_config"
         user = self.printuser()
         # 只有系統管理者可以編輯 config 設定檔案
@@ -801,7 +807,7 @@ class Pygroup(object):
         if password == None or adsense == None or anonymous == None:
             return self.error_log("no content to save!")
         # 取出目前的設定值
-        old_password, old_adsense, old_anonymous = self.parse_config(filename=filename)
+        old_password, old_adsense, old_anonymous, old_mail_suffix, old_site_closed = self.parse_config(filename=filename)
         if adsense == None or password == None or password2 != old_password or password == '':
             # 傳回錯誤畫面
             return "error"
@@ -815,7 +821,9 @@ class Pygroup(object):
             #  將新的設定值逐一寫入設定檔案中
             file.write("password:"+hashed_password+"\n \
                 adsense:"+adsense+"\n \
-                anonymous:"+anonymous+"\n")
+                anonymous:"+anonymous+"\n \
+                mail_suffix:"+mail_suffix+"\n \
+                site_closed:"+site_closed+"\n")
             file.close()
             # 傳回設定檔案已經儲存
             return "config file saved"
@@ -828,10 +836,10 @@ class Pygroup(object):
             raise cherrypy.HTTPRedirect("login")
         # 以下設法列出 config 編輯表單
         # 取出目前的設定值
-        saved_password, adsense, anonymous = self.parse_config(filename="pygroup_config")
+        saved_password, adsense, anonymous, mail_suffix, site_closed = self.parse_config(filename="pygroup_config")
         template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
         mytemplate = template_lookup.get_template("editconfigform.html")
-        return mytemplate.render(user=user, saved_password=saved_password, adsense=adsense, anonymous=anonymous)
+        return mytemplate.render(user=user, saved_password=saved_password, adsense=adsense, anonymous=anonymous, mail_suffix=mail_suffix, site_closed=site_closed)
     #@+node:2015.20140826084958.2086: *3* editadsense
     @cherrypy.expose
     def editadsense(self, adsense_content=None):
@@ -877,7 +885,9 @@ class Pygroup(object):
             # anonymouse 為 yes 表示允許無登入者可以檢視內容, 內建 anonymous 為 no
             file.write("password:"+hashed_password+"\n \
                 adsense:no\n \
-                anonymous:no\n")
+                anonymous:no\n \
+                user_mail_suffix:mde.tw,gm.nfu.edu.tw\n \
+                site_closed:no\n")
             file.close()
         # 取出設定值後, 傳回
         with open(data_dir+filename, encoding="utf-8") as file:
@@ -886,7 +896,9 @@ class Pygroup(object):
         password = config_data[0].split(":")[1]
         adsense = config_data[1].split(":")[1]
         anonymous = config_data[2].split(":")[1]
-        return password, adsense, anonymous
+        mail_suffix = config_data[3].split(":")[1]
+        site_closed = config_data[4].split(":")[1]
+        return password, adsense, anonymous, mail_suffix, site_closed
     #@+node:2014fall.20140821113240.3128: *3* logout
     @cherrypy.expose
     def logout(self, *args, **kwargs):

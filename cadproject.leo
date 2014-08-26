@@ -34,6 +34,7 @@
 <v t="2014fall.20140826101705.4467"><vh>CMSimply 已知問題</vh></v>
 <v t="2015.20140824143250.2077"><vh>20140824 程式更動</vh></v>
 <v t="2014fall.20140826101705.4466"><vh>20140826</vh></v>
+<v t="2015.20140826151106.2090"><vh>pygroup_config</vh></v>
 </v>
 <v t="course-mde-tw.20140417093332.2027" a="E"><vh>@path wsgi</vh>
 <v t="2014spring.20140803093407.1974" a="E"><vh>@path static</vh>
@@ -55,8 +56,8 @@
 <v t="2014fall.20140821113240.3137"><vh>@file application</vh></v>
 <v t="2014fall.20140821113240.3105" a="E"
 expanded="2014fall.20140821113240.3108,"><vh>@file pygroup.py</vh></v>
-<v t="2014fall.20140826101705.2629"
-expanded="2014fall.20140826101705.2698,"><vh>@file cmsimply.py</vh></v>
+<v t="2014fall.20140826101705.2629" a="E"
+expanded="2014fall.20140826101705.2654,2014fall.20140826101705.2698,"><vh>@file cmsimply.py</vh></v>
 <v t="2014fall.20140821113240.2887"><vh>@file skylark.py</vh></v>
 </v>
 <v t="2014spring.20140726005348.1759"><vh>@edit setup.py</vh></v>
@@ -201,6 +202,20 @@ pygroup_config
 新增最上方使用者 menu bar 設計
 
 線上管理各設定內容</t>
+<t tx="2015.20140826151106.2090">password:encrypted password
+adsense:no/yes
+anonymous:no/yes
+user_mail_suffix:gm.nfu.edu.tw
+site_closed:no/yes
+
+admin 管理者密碼
+adsense 廣告是否要刊登
+anonymous 用戶是否可以進入
+
+增加可以登入的 Gmail 帳號尾碼
+增加是否關閉網站設定功能
+
+增加管理者可以 edit/delete 任何資料</t>
 <t tx="course-mde-tw.20140417093332.1998"></t>
 <t tx="course-mde-tw.20140417093332.1999">QSplitter::handle {
     background-color: #CAE1FF; /* lightSteelBlue1 */

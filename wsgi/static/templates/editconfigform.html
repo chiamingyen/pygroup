@@ -22,10 +22,12 @@ if id != 0:
     output += "以下將編輯系統的設定檔案資料<br /><br />"
 output += '''
 <form method='post' action='editconfig'>
-管理者密碼:<input type='type' name='password' value="'''+saved_password+'''">
+管理者密碼:<input type='text' name='password' value="'''+saved_password+'''">
 <input type='hidden' name='password2' value="'''+saved_password+'''"><br />
-adsense:<input type='name' name='adsense' value="'''+adsense+'''"><br />
-anonymous:<input type='name' name='anonymous' value="'''+anonymous+'''"><br />
+adsense:<input type='text' name='adsense' value="'''+adsense+'''"><br />
+anonymous:<input type='text' name='anonymous' value="'''+anonymous+'''"><br />
+mail_suffix:<input type='text' name='mail_suffix' value="'''+mail_suffix+'''"><br />
+site_closed:<input type='text' name='site_closed' value="'''+site_closed+'''"><br />
 '''
 output += '''
 <input type='submit' value='edit'>
