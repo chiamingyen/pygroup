@@ -266,7 +266,7 @@ class Pygroup(object):
         content = content.replace('\n', '')
         #invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
         #content = self.clean_html(content, invalid_tags)
-        valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol']
+        valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
         content = self.html_filter(content, valid_tags)
 
         time_elapsed = round(time.time() - start_time, 5)
@@ -361,7 +361,7 @@ class Pygroup(object):
         return soup
 
     #@+node:2015.20140826221446.2092: *3* html_filter
-    # valid_tags = ['a', 'br', 'h', 'p', 'span', 'div', 'hr', 'img', 'iframe']
+    # valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
     def html_filter(self, html, valid_tags):
         soup = BeautifulSoup(html)
         for tag in soup.findAll(True):
@@ -973,7 +973,7 @@ class Pygroup(object):
         content = content.replace('\n', '')
         #invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
         #content = self.clean_html(content, invalid_tags)
-        valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol']
+        valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
         content = self.html_filter(content, valid_tags)
         
         output = "user:"+user+", owner:"+data.owner+"<br /><br />"
