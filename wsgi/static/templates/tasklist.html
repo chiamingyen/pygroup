@@ -216,7 +216,8 @@ import cgi
                 i += 1
             for task in paginate(data, int(page), int(item_per_page)):
                 outstring +="<tr>"
-                if user == task.owner and user != "anonymous":
+                ## admin 管理者可以編輯或刪除任何資料
+                if (user == task.owner and user != "anonymous") or (user == "admin"):
                     if task.follow != 0:
                         # 表示非主緒
                         outstring += "<td rowspan='2'>"+task.owner+"</td><td style='background-color: #cceeff;'><a href='?id="+str(task.id)+"'>id="+str(task.id)+"</a> (<a href='?id="+str(task.follow)+"'>up</a>) - "+task.name+"</td><td  style='background-color: #cceeff;'>"+task.type+"</td><td  style='background-color: #cceeff;'>"+ \

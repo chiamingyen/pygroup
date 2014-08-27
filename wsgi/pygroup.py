@@ -374,6 +374,8 @@ class Pygroup(object):
                 for r in reversed(tag.contents):
                     tag.parent.insert(i, r)
                 tag.extract()
+        # 這裡要除掉 </br> 關閉 break 的標註, 否則在部分瀏覽器會產生額外的跳行
+        content = content.replace('</br>', '')
         return soup
     #@+node:2014fall.20140821113240.3117: *3* client_ip
     def client_ip(self):
