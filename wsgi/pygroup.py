@@ -988,7 +988,7 @@ class Pygroup(object):
             else:
                 query = Task.at(int(id)).update(type=type, name=name, content=content, time=str(now))
                 query.execute()
-                output += "<a href='/'>Go to main page</a><br />"
+                output += "<a href='/'>Go to main page</a><br /><br />"
                 output += '''以下資料已經更新:<br /><br />
                 owner:'''+data.owner+'''<br />
                 name:'''+name+'''<br />
@@ -1000,7 +1000,7 @@ class Pygroup(object):
         else:
             query = Task.at(int(id)).update(type=type, name=name, content=str(content), time=str(now))
             query.execute()
-            output += "<a href='/'>Go to main page</a><br />"
+            output += "<a href='/'>Go to main page</a><br /><br />"
             output += '''以下資料已經更新:<br /><br />
             owner:'''+data.owner+'''<br />
             name:'''+name+'''<br />

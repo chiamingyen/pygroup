@@ -17,7 +17,16 @@ import cgi
 @import "/templates/style/base.css";
 </style>
 <%
-output = "<br /><br />使用者:"+user+"<br /><br />"
+output = "<a href='/'>Go to main page</a> (<a href='/?flat=1'>flat</a>)"
+# 假如 user 非 anonymou 則列出 logout 連結
+if user != "anonymous":
+    output += " <a href='logout'>Logout</a> "
+if user == "anonymous":
+    output += " <a href='login'>Login</a> "
+if user == "admin":
+    output += " <a href='editconfigform'>Config</a>"
+output += "<br /><br />"
+output += "<br /><br />使用者:"+user+"<br /><br />"
 if id != 0:
     output += "以下將編輯 adsense_content 檔案資料<br /><br />"
 output += '''
