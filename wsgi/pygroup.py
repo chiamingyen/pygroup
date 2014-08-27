@@ -269,9 +269,9 @@ class Pygroup(object):
         valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
         content = self.html_filter(content, valid_tags)
         # 這裡要除掉 </br> 關閉 break 的標註, 否則在部分瀏覽器會產生額外的跳行
-        content = content.replace('</br>', '')
+        content = str(content).replace('</br>', '')
         time_elapsed = round(time.time() - start_time, 5)
-        Task.create(owner=owner, name=str(name), type=type, time=str(now), follow=follow, content=str(content), ip=str(ip))
+        Task.create(owner=owner, name=str(name), type=type, time=str(now), follow=follow, content=content, ip=str(ip))
 
         raise cherrypy.HTTPRedirect("tasklist")
     #@+node:2014fall.20140821113240.3115: *3* index (tasklist)
@@ -979,14 +979,14 @@ class Pygroup(object):
         valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
         content = self.html_filter(content, valid_tags)
         # 這裡要除掉 </br> 關閉 break 的標註, 否則在部分瀏覽器會產生額外的跳行
-        content = content.replace('</br>', '')
+        content = str(content).replace('</br>', '')
         
         output = "user:"+user+", owner:"+data.owner+"<br /><br />"
         if user != data.owner:
             if  user != "admin":
                 return "error! Not authorized!"
             else:
-                query = Task.at(int(id)).update(type=type, name=name, content=str(content), time=str(now))
+                query = Task.at(int(id)).update(type=type, name=name, content=content, time=str(now))
                 query.execute()
                 output += "<a href='/'>Go to main page</a><br />"
                 output += '''以下資料已經更新:<br /><br />
