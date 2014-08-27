@@ -957,6 +957,8 @@ class Pygroup(object):
     @cherrypy.expose
     def taskedit(self, id=None, type=None, name=None, content=None, *args, **kwargs):
         # check user and data owner
+        if id == None:
+            return "error<br /><br /><a href='/'>Go to main page</a><br />"
         user = self.printuser()
         if self.allow_pass(user) == "no":
             raise cherrypy.HTTPRedirect("login")
@@ -967,8 +969,8 @@ class Pygroup(object):
         
         # Python 3.x:
         #import html.parser
-        #html_parser = html.parser.HTMLParser()
-        #content = html_parser.unescape(content)
+        html_parser = html.parser.HTMLParser()
+        content = html_parser.unescape(content)
         # 過濾資料
         content = content.replace('\n', '')
         #invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
@@ -983,6 +985,7 @@ class Pygroup(object):
             else:
                 query = Task.at(int(id)).update(type=type, name=name, content=str(content), time=str(now))
                 query.execute()
+                output += "<a href='/'>Go to main page</a><br />"
                 output += '''以下資料已經更新:<br /><br />
                 owner:'''+data.owner+'''<br />
                 name:'''+name+'''<br />
@@ -994,6 +997,7 @@ class Pygroup(object):
         else:
             query = Task.at(int(id)).update(type=type, name=name, content=str(content), time=str(now))
             query.execute()
+            output += "<a href='/'>Go to main page</a><br />"
             output += '''以下資料已經更新:<br /><br />
             owner:'''+data.owner+'''<br />
             name:'''+name+'''<br />

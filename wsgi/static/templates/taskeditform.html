@@ -82,21 +82,30 @@ theme_advanced_buttons4 : ""
 @import "/templates/style/base.css";
 </style>
 <%
-output = "<br /><br />使用者:"+user+"<br /><br />"
+# 這裡再加上表單
+outstring = "<br /><br /><a href='/'>Go to main page</a> (<a href='?flat=1'>flat</a>)"
+# 假如 user 非 anonymou 則列出 logout 連結
+if user != "anonymous":
+    outstring += " <a href='logout'>Logout</a> "
+if user == "anonymous":
+    outstring += " <a href='login'>Login</a> "
+if user == "admin":
+    outstring += " <a href='editconfigform'>Config</a> <a href='editadsenseform'>Adsense Config</a>"
+outstring += "<br /><br />使用者:"+user+"<br /><br />"
 if id != 0:
-    output += "以下將編輯 id="+str(id)+" 的資料<br /><br />"
-output += '''
+    outstring += "以下將編輯 id="+str(id)+" 的資料<br /><br />"
+outstring += '''
 <form method='post' action='taskedit'>
 tasktype:<input type='type' name='type' value="'''+data.type+'''"><br />
 taskname:<input type='name' name='name' value="'''+data.name+'''"><br />
 '''
-output += "taskcontent:<br /><textarea class='simply-editor' name='content' cols='50' rows='10'>"+cgi.escape(data.content)+"</textarea><br />"
-output += '''
+outstring += "taskcontent:<br /><textarea class='simply-editor' name='content' cols='50' rows='10'>"+cgi.escape(data.content)+"</textarea><br />"
+outstring += '''
 <input type='hidden' name='id' value="'''+str(data.id)+'''">
 <input type='submit' value='edit'>
 </form>
 '''
 %>
-${output}
+${outstring}
 
 

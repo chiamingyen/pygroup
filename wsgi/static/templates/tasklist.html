@@ -192,10 +192,10 @@ import cgi
                     outstring += "</tr>"
                     i += 1
             else:
-                ##for task in data.paginate(int(page), int(item_per_page)):
+                ## admin 管理者可以編輯或刪除任何資料
                 for task in paginate(data, int(page), int(item_per_page)):
                     outstring +="<tr>"
-                    if user == task.owner and user != "anonymous":
+                    if (user == task.owner and user != "anonymous") or (user == "admin"):
                         outstring += "<td>"+task.owner+"</td><td><a href='?id="+str(task.id)+"'>"+task.name+"</a></td><td>"+task.type+"</td><td>"+ \
                                     str(task.time)+"</td><td><a href='taskeditform?id="+str(task.id)+"'>edit</a> <a href='taskdeleteform?id="+str(task.id)+"'>delete</a></td>"
                     elif task.owner == "anonymous" or user == "anonymous":
@@ -214,7 +214,6 @@ import cgi
                 if i ==0:
                     myfollow = task.follow
                 i += 1
-            #for task in data.paginate(int(page), int(item_per_page)):
             for task in paginate(data, int(page), int(item_per_page)):
                 outstring +="<tr>"
                 if user == task.owner and user != "anonymous":
@@ -274,6 +273,15 @@ import cgi
     # 若在雲端執行, 加上 Google 廣告
     if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
         outstring += "<br />"+adsense_content
+    # 這裡再加上表單
+    outstring += "<br /><br /><a href='/'>Go to main page</a> (<a href='?flat=1'>flat</a>)"
+    # 假如 user 非 anonymou 則列出 logout 連結
+    if user != "anonymous":
+        outstring += " <a href='logout'>Logout</a> "
+    if user == "anonymous":
+        outstring += " <a href='login'>Login</a> "
+    if user == "admin":
+        outstring += " <a href='editconfigform'>Config</a> <a href='editadsenseform'>Adsense Config</a>"
 %>
 ${outstring}
 % if myfollow == 0:

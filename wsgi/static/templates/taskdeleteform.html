@@ -28,34 +28,43 @@
 @import "/templates/style/base.css";
 </style>
 <%
-output = "<br /><br />使用者:"+user+"<br /><br />"
+# 這裡再加上表單
+outstring = "<br /><br /><a href='/'>Go to main page</a> (<a href='?flat=1'>flat</a>)"
+# 假如 user 非 anonymou 則列出 logout 連結
+if user != "anonymous":
+    outstring += " <a href='logout'>Logout</a> "
+if user == "anonymous":
+    outstring += " <a href='login'>Login</a> "
+if user == "admin":
+    outstring += " <a href='editconfigform'>Config</a> <a href='editadsenseform'>Adsense Config</a>"
+outstring += "<br /><br />使用者:"+user+"<br /><br />"
 if id != 0:
-    output += "<form method='post' action='taskdelete'>"
+    outstring += "<form method='post' action='taskdelete'>"
     if type == "alone":
         # 表示要刪除單筆資料
-        output += "以下將刪除 id="+str(data.id)+" 的資料<br /><br />"
+        outstring += "以下將刪除 id="+str(data.id)+" 的資料<br /><br />"
         # 若要刪除主緒資料, 則所有子緒資料在刪除前應該全部列出
-        output += '''
+        outstring += '''
         tasktype:'''+data.type+'''<br />
         taskname:'''+data.name+'''<br />
     '''
-        output += "taskcontent:<br />"+data.content+"<br />"
+        outstring += "taskcontent:<br />"+data.content+"<br />"
     else:
         # data 有多筆資料
         for task in data:
-            output += "以下將刪除 id="+str(task.id)+" 的資料<br /><br />"
+            outstring += "以下將刪除 id="+str(task.id)+" 的資料<br /><br />"
             # 若要刪除主緒資料, 則所有子緒資料在刪除前應該全部列出
-            output += '''
+            outstring += '''
         tasktype:'''+task.type+'''<br />
         taskname:'''+task.name+'''<br />
     '''
-            output += "taskcontent:<br />"+task.content+"<br />"
-    output += '''
+            outstring += "taskcontent:<br />"+task.content+"<br />"
+    outstring += '''
     <input type='hidden' name='id' value="'''+str(id)+'''">
     <input type='submit' value='delete'>
     </form>
 '''
 %>
-${output}
+${outstring}
 
 
