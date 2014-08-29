@@ -263,6 +263,9 @@ class Pygroup(object):
             raise cherrypy.HTTPRedirect("login")
         ip = self.client_ip()
         now = datetime.datetime.now(pytz.timezone('Asia/Taipei')).strftime('%Y-%m-%d %H:%M:%S')
+        # user 若帶有 @ 則用 at 代替
+        if "@" in owner:
+            owner = owner.replace('@', 'at')
         content = content.replace('\n', '')
         #invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
         #content = self.clean_html(content, invalid_tags)
@@ -277,7 +280,7 @@ class Pygroup(object):
     #@+node:2014fall.20140821113240.3115: *3* index (tasklist)
     @cherrypy.expose
     # 從 tasklist 改為 index
-    def index(self, page=1, item_per_page=5, id=0, flat=0, keyword=None, *args, **kwargs):
+    def index(self, page=1, item_per_page=5, id=0, flat=0, desc=0, keyword=None, *args, **kwargs):
         user = self.printuser()
         # 這裡不用 self.allow_pass 原因在於需要 adsense 變數
         saved_password, adsense, anonymous, mail_suffix, site_closed = self.parse_config(filename="pygroup_config")
@@ -303,15 +306,26 @@ class Pygroup(object):
             if id == 0:
                 if flat == 0:
                     # 只列出主資料緒
-                    method = "?"
-                    query = Task.where(Task.follow==0).select()
+                    # desc 為 0 表示要 id 由小到大排序列出資料
+                    if desc == 0:
+                        method = "?"
+                        query = Task.where(Task.follow==0).select()
+                    else:
+                        # desc 為 1 表示 id 反向排序
+                        method = "?desc=1"
+                        query = Task.where(Task.follow==0).orderby(Task.id, desc=True).select()
                     result = query.execute()
                     data = result.all()
 
                 else:
-                    # flat 列出所有資料
-                    method = "?flat=1"
-                    query = Task.select()
+                    # flat 為 1 表示要列出所有資料
+                    # 原先沒有反向排序, 內建使用正向排序
+                    if desc == 0:
+                        method = "?flat=1"
+                        query = Task.select()
+                    else:
+                        method = "?flat=1&desc=1"
+                        query = Task.orderby(Task.id, desc=True).select()
                     result = query.execute()
                     data = result.all()
             else:
