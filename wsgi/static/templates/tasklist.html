@@ -275,7 +275,7 @@ import cgi
     if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
         outstring += "<br />"+adsense_content
     # 這裡再加上表單
-    outstring += "<br /><br /><a href='/'>Go to main page</a> (<a href='?flat=1'>flat</a>)"
+    outstring += "<br /><br /><a href='/'>Go to main page</a> (<a href='?desc=1'>最新在前</a>) (<a href='?flat=1'>flat</a> (<a href='?flat=1&desc=1'>flat 最新在前</a>))"
     # 假如 user 非 anonymou 則列出 logout 連結
     if user != "anonymous":
         outstring += " <a href='logout'>Logout</a> "
@@ -285,7 +285,7 @@ import cgi
         outstring += " <a href='editconfigform'>Config</a> <a href='editadsenseform'>Adsense Config</a>"
 %>
 ${outstring}
-% if myfollow == 0:
+% if (myfollow == 0 and read_only != "yes") or user == "admin":
         <br />
         ##id = ${id} <br />
         ##myfollow 值為: ${myfollow} <br />

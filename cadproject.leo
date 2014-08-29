@@ -35,6 +35,7 @@
 <v t="2015.20140824143250.2077"><vh>20140824 程式更動</vh></v>
 <v t="2014fall.20140826101705.4466"><vh>20140826</vh></v>
 <v t="2015.20140828002231.2093"><vh>20140828</vh></v>
+<v t="2015.20140829105017.2095"><vh>20140829</vh></v>
 <v t="2015.20140826151106.2090"><vh>pygroup_config</vh></v>
 </v>
 <v t="course-mde-tw.20140417093332.2027" a="E"><vh>@path wsgi</vh>
@@ -218,6 +219,14 @@ anonymous 用戶是否可以進入
 
 增加管理者可以 edit/delete 任何資料</t>
 <t tx="2015.20140828002231.2093">同步到 2014fall-2013fall</t>
+<t tx="2015.20140829105017.2095">增加一個 readonly 設定選項
+
+管理者密碼: 
+adsense: yes/no
+anonymous: yse/no
+mail_suffix:
+site_closed: yes/no
+read_only: yes/no</t>
 <t tx="course-mde-tw.20140417093332.1998"></t>
 <t tx="course-mde-tw.20140417093332.1999">QSplitter::handle {
     background-color: #CAE1FF; /* lightSteelBlue1 */

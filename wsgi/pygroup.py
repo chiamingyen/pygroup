@@ -283,7 +283,7 @@ class Pygroup(object):
     def index(self, page=1, item_per_page=5, id=0, flat=0, desc=0, keyword=None, *args, **kwargs):
         user = self.printuser()
         # 這裡不用 self.allow_pass 原因在於需要 adsense 變數
-        saved_password, adsense, anonymous, mail_suffix, site_closed = self.parse_config(filename="pygroup_config")
+        saved_password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
         if user == "anonymous" and anonymous != "yes":
             raise cherrypy.HTTPRedirect("login")
         if adsense == "yes":
@@ -355,13 +355,15 @@ class Pygroup(object):
         #
         # 送出 user, id, flat, method 與 data
         #
+        # 增加傳送 read_only, 若 read_only = yes 則不列出 taskform, 而且所有新增編輯刪除功能均失效
+        #
         return mytemplate.render(user=user, id=id, flat=flat, method=method, data=data,  \
             page=page, item_per_page=item_per_page, ip=ip, follow=follow, keyword=keyword, \
-            adsense_content=adsense_content)
+            adsense_content=adsense_content, read_only=read_only)
         # 其餘分頁 logic 在 mako template tasklist.html 中完成
     #@+node:2015.20140824143250.2080: *3* allow_pass
     def allow_pass(self, user="anonymous"):
-        password, adsense, anonymous, mail_suffix, site_closed = self.parse_config(filename="pygroup_config")
+        password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
         if user == "anonymous" and anonymous != "yes":
             return "no"
         else:
@@ -415,359 +417,13 @@ class Pygroup(object):
     @cherrypy.expose
     def inputform(self, input1=None, input2=None):
         return "input form"+str(input1)
-    #@+node:2014fall.20140821113240.3121: *3* calc
-    @cherrypy.expose
-    def calc(self, *args, **kwargs):
-        ethercalc_path = "http://calc-coursemdetw.rhcloud.com"
-        return '''
-    <!DOCTYPE html> 
-    <html>
-    <head>
-    <meta http-equiv="content-type" content="text/html;charset=utf-8">
-    <script type="text/javascript" src="/static/Brython2.1.0rc2-20140412-152157/brython.js"></script>
-    <script type="text/javascript" src="/static/socialcalc/socialcalcconstants.js"></script>
-    <script type="text/javascript" src="/static/socialcalc/socialcalc-3.js"></script>
-    <script type="text/javascript" src="/static/socialcalc/socialcalctableeditor.js"></script>
-    <script type="text/javascript" src="/static/socialcalc/formatnumber2.js"></script>
-    <script type="text/javascript" src="/static/socialcalc/formula1.js"></script>
-    <script type="text/javascript" src="/static/socialcalc/socialcalcpopup.js"></script>
-    <script type="text/javascript" src="/static/socialcalc/socialcalcspreadsheetcontrol.js"></script>
-    <script type="text/javascript" src="/static/socialcalc/socialcalcviewer.js"></script>
-
-    <script src="'''+ethercalc_path+'''/socket.io/socket.io.js"></script>
-    <script src="'''+ethercalc_path+'''/zappa/zappa.js?123"></script>
-    <script src="'''+ethercalc_path+'''/player/broadcast.js"></script>
-    <script src="'''+ethercalc_path +'''/static/md5.js"></script>
-    <script src="'''+ethercalc_path+'''/player/graph.js"></script>
-    <script src="'''+ethercalc_path+'''/player/main.js"></script>
-    </head>
-    <body onload="brython({debug:1, cache:'version'})">
-    <div id="tableeditor" style="margin:8px 0px 10px 0px;">editor goes here</div>
-    </div>
-    <div id="msg" onclick="this.innerHTML='&nbsp;';"></div>
-
-    <script id="ascript" type="text/python">
-    from browser import ajax, doc, alert
-    from javascript import JSConstructor
-
-    spreadsheet =  JSConstructor(SocialCalc.SpreadsheetControl)()
-    savestr = ""
-    spreadsheet.InitializeSpreadsheetControl("tableeditor")
-    spreadsheet.ExecuteCommand('redisplay', '')
-
-    def on_complete(req):
-        print(req.readyState)
-        print('status',req.status)
-        if req.status==200 or req.status==0:
-            doc["result"].html = req.text
-        else:
-            doc["result"].html = "error "+req.text
-
-    def err_msg():
-        doc["result"].html = "server didn't reply after %s seconds" %timeout
-
-    timeout = 4
-
-    def go(url):
-        req = ajax.ajax()
-        req.bind('complete',on_complete)
-        req.set_timeout(timeout,err_msg)
-        req.open('GET',url,True)
-        req.send()
-
-    def post(url):
-        global spreadsheet
-        sheet_content = spreadsheet.CreateSpreadsheetSave()
-        req = ajax.ajax()
-        req.bind('complete',on_complete)
-        req.set_timeout(timeout,err_msg)
-        req.open('POST',url,True)
-        req.set_header('content-type','application/x-www-form-urlencoded')
-        req.send({'sheet_content':sheet_content})
-
-    def show_save(ev):
-        global spreadsheet
-        sheet_content = spreadsheet.CreateSpreadsheetSave()
-        print(sheet_content)
-        
-    def doreload(ev):
-        global spreadsheet
-        sheet_content = spreadsheet.CreateSpreadsheetSave()
-        parts = spreadsheet.DecodeSpreadsheetSave(sheet_content)
-        if (parts):
-            if (parts.sheet):
-                spreadsheet.sheet.ResetSheet()
-                spreadsheet.ParseSheetSave(sheet_content[parts.sheet.start:parts.sheet.end])
-            if (parts.edit):
-                spreadsheet.editor.LoadEditorSettings(sheet_content[parts.edit.start:parts.edit.end])
-
-        #if (spreadsheet.editor.context.sheetobj.attribs.recalc=="off"):
-            #spreadsheet.ExecuteCommand('redisplay', '')
-        #else:
-        spreadsheet.ExecuteCommand('recalc', '')
-        alert("reload done")
-
-    # bindings
-    #doc['timeout'].bind('click',lambda ev:go('/ajax.py'))
-    doc['save_program'].bind('click',lambda ev:post('/save_program'))
-    doc['show_save'].bind('click', show_save)
-    doc['doreload'].bind('click', doreload)
-    </script>
-    <button id="show_save">顯示內容</button>
-    <button id="doreload">do reload</button>
-    <button onClick=exec_command();>exec command</button>
-    <button id="save_program";>save program</button>
-    </body>
-    </html>
-    '''
-    #@+node:2014fall.20140821113240.3122: *3* ethercalc
-    @cherrypy.expose
-    def ethercalc(self, filename=None, *args, **kwargs):
-        part1 = '''
-    <!DOCTYPE html> 
-    <!--<html manifest="/static/manifest.appcache">-->
-    <html>
-    <head>
-    <meta http-equiv="content-type" content="text/html;charset=utf-8">
-    <script type="text/javascript" src="/static/Brython2.1.0rc2-20140412-152157/brython.js"></script>
-    <script type="text/javascript" src="/static/socialcalc/socialcalcconstants.js"></script>
-    <script type="text/javascript" src="/static/socialcalc/socialcalc-3.js"></script>
-    <script type="text/javascript" src="/static/socialcalc/socialcalctableeditor.js"></script>
-    <script type="text/javascript" src="/static/socialcalc/formatnumber2.js"></script>
-    <script type="text/javascript" src="/static/socialcalc/formula1.js"></script>
-    <script type="text/javascript" src="/static/socialcalc/socialcalcpopup.js"></script>
-    <script type="text/javascript" src="/static/socialcalc/socialcalcspreadsheetcontrol.js"></script>
-    <script type="text/javascript" src="/static/socialcalc/socialcalcviewer.js"></script>
-    </head>
-    <body onload="brython({debug:1, cache:'version'})">
-    <div id="tableeditor" style="margin:8px 0px 10px 0px;">editor goes here</div>
-    </div>
-    <div id="msg" onclick="this.innerHTML='&nbsp;';"></div>
-
-    <script id="ascript" type="text/python">
-    from browser import ajax, doc, alert, websocket
-    from javascript import JSConstructor
-
-    spreadsheet =  JSConstructor(SocialCalc.SpreadsheetControl)()
-    savestr = ""
-    spreadsheet.InitializeSpreadsheetControl("tableeditor")
-    spreadsheet.ExecuteCommand('redisplay', '')
-
-    def on_complete(req):
-        print(req.readyState)
-        print('status',req.status)
-        if req.status==200 or req.status==0:
-            doc["result"].html = req.text
-        else:
-            doc["result"].html = "error "+req.text
-
-    def err_msg():
-        doc["result"].html = "server didn't reply after %s seconds" %timeout
-
-    timeout = 4
-
-    def go(url):
-        req = ajax.ajax()
-        req.bind('complete',on_complete)
-        req.set_timeout(timeout,err_msg)
-        req.open('GET',url,True)
-        req.send()
-
-    def post(url):
-        global spreadsheet
-        sheet_content = spreadsheet.CreateSpreadsheetSave()
-        req = ajax.ajax()
-        req.bind('complete',on_complete)
-        req.set_timeout(timeout,err_msg)
-        req.open('POST',url,True)
-        req.set_header('content-type','application/x-www-form-urlencoded')
-        req.send({'filename':doc["filename"].value, 'sheet_content':sheet_content})
-
-    def show_save(ev):
-        global spreadsheet
-        sheet_content = spreadsheet.CreateSpreadsheetSave()
-        print(sheet_content)
-        
-    def doreload(ev):
-        global spreadsheet
-        sheet_content = spreadsheet.CreateSpreadsheetSave()
-        parts = spreadsheet.DecodeSpreadsheetSave(sheet_content)
-        if (parts):
-            if (parts.sheet):
-                spreadsheet.sheet.ResetSheet()
-                spreadsheet.ParseSheetSave(sheet_content[parts.sheet.start:parts.sheet.end])
-            if (parts.edit):
-                spreadsheet.editor.LoadEditorSettings(sheet_content[parts.edit.start:parts.edit.end])
-
-        #if (spreadsheet.editor.context.sheetobj.attribs.recalc=="off"):
-            #spreadsheet.ExecuteCommand('redisplay', '')
-        #else:
-        spreadsheet.ExecuteCommand('recalc', '')
-        alert("reload done")
-
-    # get program from server
-    def get_prog(ev):
-        # ajax can only read data from server
-        _name = '/calc_programs/'+doc["filename"].value
-        try:
-            sheet_content = open(_name, encoding="utf-8").read()
-            parts = spreadsheet.DecodeSpreadsheetSave(sheet_content)
-            if (parts):
-                if (parts.sheet):
-                    spreadsheet.sheet.ResetSheet()
-                    spreadsheet.ParseSheetSave(sheet_content[parts.sheet.start:parts.sheet.end])
-                if (parts.edit):
-                    spreadsheet.editor.LoadEditorSettings(sheet_content[parts.edit.start:parts.edit.end])
-            spreadsheet.ExecuteCommand('recalc', '')
-            doc["result"].html = doc["filename"].value+" loaded!"
-        except:
-            doc["result"].html = "can not get "+doc["filename"].value+"!"
-
-    # for built-in websocket
-    def on_open(evt):
-        doc['send_button'].disabled = False
-        doc['closebtn'].disabled = False
-        doc['openbtn'].disabled = True
-
-    def on_message(evt):
-        # message reeived from server
-        alert("Message received : %s" %evt.data)
-
-    def on_close(evt):
-        # websocket is closed
-        alert("Connection is closed")
-        doc['openbtn'].disabled = False
-        doc['closebtn'].disabled = True
-        doc['send_button'].disabled = True
-
-    ws = None
-    def _open(evt):
-        global spreadsheet
-        sheet_content = spreadsheet.CreateSpreadsheetSave()
-        if not __BRYTHON__.has_websocket:
-            alert("WebSocket is not supported by your browser")
-            return
-        global ws
-        # open a web socket
-        ws = websocket.websocket("wss://localhost:8000")
-        # bind functions to web socket events
-        ws.bind('open',on_open)
-        ws.bind(sheet_content,on_message)
-        ws.bind('close',on_close)
-
-    def send(evt):
-        data = doc["data"].value
-        if data:
-            ws.send(data)
-
-    def close_connection(evt):
-        ws.close()
-        doc['openbtn'].disabled = False
-
-    # bindings
-    #doc['timeout'].bind('click',lambda ev:go('/ajax.py'))
-    doc['save_program'].bind('click',lambda ev:post('/save_program'))
-    doc['get_prog'].bind('click', get_prog)
-    doc['show_save'].bind('click', show_save)
-    doc['doreload'].bind('click', doreload)
-    doc['openbtn'].bind('click', _open)
-    '''
-        # if load program through url
-        if filename != None:
-            load_program = '''
-    # ajax can only read data from server
-    _name = '/calc_programs/'''+filename+''''
-    try:
-        sheet_content = open(_name, encoding="utf-8").read()
-        parts = spreadsheet.DecodeSpreadsheetSave(sheet_content)
-        if (parts):
-            if (parts.sheet):
-                spreadsheet.sheet.ResetSheet()
-                spreadsheet.ParseSheetSave(sheet_content[parts.sheet.start:parts.sheet.end])
-            if (parts.edit):
-                spreadsheet.editor.LoadEditorSettings(sheet_content[parts.edit.start:parts.edit.end])
-        spreadsheet.ExecuteCommand('recalc', '')
-        doc["filename"].value = "'''+filename+'''"
-        doc["result"].html = "'''+filename+''' loaded!"
-    except:
-        doc["result"].html = "can not get '''+filename+'''!"
-    '''
-        else:
-            load_program = ""
-
-        part2 = '''
-    </script>
-    <button id="show_save">顯示內容</button>
-    <button id="doreload">do reload</button>
-    <button onClick=exec_command();>exec command</button>
-    <button id="save_program";>save program</button>
-    filename: <input id="filename">
-    <button id="get_prog">get prog file</button><br />
-    <div id="result">(empty)</div><br />
-    <button id="openbtn">Open connection</button> 
-    <input id="data">
-    <button id="send_button" disabled onclick="send()">Send</button>
-    <button id="closebtn" disabled onclick="close_connection()">Close connection</button>
-    </body>
-    </html>
-    '''
-        return part1+load_program+part2
-    #@+node:2014fall.20140821113240.3123: *3* print99
-    @cherrypy.expose
-    # version 1 use no table
-    def print99(self, var1=10, var2=10):
-        # initialize outstring
-        outstring = ""
-        # initialize count
-        count = 0
-        for i in range(1, int(var1)):
-            for j in range(1, int(var2)):
-                count += 1
-                if count%9 == 0:
-                    outstring += str(i) + "x" + str(j) + "=" + str(i*j) + "<br />"
-                else:
-                    outstring += str(i) + "x" + str(j) + "=" + str(i*j) + "&nbsp;"*4
-        return outstring
-        #return "列印九九乘法表"+str(var1)+str(var2)
-    #@+node:2014fall.20140821113240.3124: *3* print992
-    @cherrypy.expose
-    # version 2 use table
-    def print992(self, var1=10, var2=10):
-        # initialize outstring
-        outstring = "<table  style='border: 5px double rgb(109, 2, 107); height: 100px; background-color: rgb(255, 255, 255); width: 300px;' align='left' cellpadding='8' cellspacing='8' frame='border' rules='all'>"
-        # initialize count
-        count = 0
-        for i in range(1, int(var1)):
-            outstring += "<tr>"
-            for j in range(1, int(var2)):
-                outstring += "<td>"+str(i) + "x" + str(j) + "=" + str(i*j) + "</td>"
-            outstring += "</tr>"
-        outstring += "</table>"
-        return outstring
-        #return "列印九九乘法表"+str(var1)+str(var2)
-    #@+node:2014fall.20140821113240.3125: *3* print993
-    @cherrypy.expose
-    # version 3 add javascript alert
-    def print993(self, var1=10, var2=10):
-        # initialize outstring
-        outstring = "<table  style='border: 5px double rgb(109, 2, 107); height: 600px; background-color: rgb(255, 255, 255); width: 800px;' align='left' cellpadding='8' cellspacing='8' frame='border' rules='all'>"
-        # initialize count
-        count = 0
-        for i in range(1, int(var1)):
-            outstring += "<tr>"
-            for j in range(1, int(var2)):
-                outstring += "<td><button onClick=alert('"+str(i*j)+"')>"+str(i) + "x" + str(j) + "</button>=" + str(i*j) + "</td>"
-            outstring += "</tr>"
-        outstring += "</table>"
-        return outstring
-        #return "列印九九乘法表"+str(var1)+str(var2)
     #@+node:2014fall.20140821113240.3126: *3* login
     @cherrypy.expose
     # 登入表單, 使用 gmail 帳號與密碼登入
     def login(self):
         # 當使用者要求登入時, 將 user session 清除
         cherrypy.session["user"] = ""
-        saved_password, adsense, anonymous, mail_suffix, site_closed = self.parse_config(filename="pygroup_config")
+        saved_password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
         if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
             output = '''
         <html>
@@ -801,7 +457,7 @@ class Pygroup(object):
     #@+node:2014fall.20140821113240.3127: *3* logincheck
     @cherrypy.expose
     def logincheck(self, account=None, password=None):
-        saved_password, adsense, anonymous, mail_suffix, site_closed = self.parse_config(filename="pygroup_config")
+        saved_password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
         if account != None and password != None:
             # 這裡要加入用戶名稱為 admin 的管理者登入模式
             if account == "admin":
@@ -837,7 +493,7 @@ class Pygroup(object):
     #@+node:2015.20140825203447.2081: *3* editconfig
     @cherrypy.expose
     def editconfig(self, password=None, password2=None, adsense=None, anonymous=None, \
-                    mail_suffix=None, site_closed=None):
+                    mail_suffix=None, site_closed=None, read_only=None):
         filename = "pygroup_config"
         user = self.printuser()
         # 只有系統管理者可以編輯 config 設定檔案
@@ -846,7 +502,7 @@ class Pygroup(object):
         if password == None or adsense == None or anonymous == None:
             return self.error_log("no content to save!")
         # 取出目前的設定值
-        old_password, old_adsense, old_anonymous, old_mail_suffix, old_site_closed = self.parse_config(filename=filename)
+        old_password, old_adsense, old_anonymous, old_mail_suffix, old_site_closed, read_only = self.parse_config(filename=filename)
         if adsense == None or password == None or password2 != old_password or password == '':
             # 傳回錯誤畫面
             return "error<br /><a href='/'>Go to main page</a><br />"
@@ -862,7 +518,8 @@ class Pygroup(object):
                 adsense:"+adsense+"\n \
                 anonymous:"+anonymous+"\n \
                 mail_suffix:"+mail_suffix+"\n \
-                site_closed:"+site_closed+"\n")
+                site_closed:"+site_closed+"\n \
+                read_only:"+read_only+"\n")
             file.close()
             # 傳回設定檔案已經儲存
             return "config file saved<br /><a href='/'>Go to main page</a><br />"
@@ -875,10 +532,10 @@ class Pygroup(object):
             raise cherrypy.HTTPRedirect("login")
         # 以下設法列出 config 編輯表單
         # 取出目前的設定值
-        saved_password, adsense, anonymous, mail_suffix, site_closed = self.parse_config(filename="pygroup_config")
+        saved_password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
         template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
         mytemplate = template_lookup.get_template("editconfigform.html")
-        return mytemplate.render(user=user, saved_password=saved_password, adsense=adsense, anonymous=anonymous, mail_suffix=mail_suffix, site_closed=site_closed)
+        return mytemplate.render(user=user, saved_password=saved_password, adsense=adsense, anonymous=anonymous, mail_suffix=mail_suffix, site_closed=site_closed, read_only=read_only)
     #@+node:2015.20140826084958.2086: *3* editadsense
     @cherrypy.expose
     def editadsense(self, adsense_content=None):
@@ -925,8 +582,9 @@ class Pygroup(object):
             file.write("password:"+hashed_password+"\n \
                 adsense:no\n \
                 anonymous:no\n \
-                user_mail_suffix:mde.tw,gm.nfu.edu.tw\n \
-                site_closed:no\n")
+                user_mail_suffix:\n \
+                site_closed:no\n \
+                read_only:no\n")
             file.close()
         # 取出設定值後, 傳回
         with open(data_dir+filename, encoding="utf-8") as file:
@@ -937,7 +595,8 @@ class Pygroup(object):
         anonymous = config_data[2].split(":")[1]
         mail_suffix = config_data[3].split(":")[1]
         site_closed = config_data[4].split(":")[1]
-        return password, adsense, anonymous, mail_suffix, site_closed
+        read_only = config_data[5].split(":")[1]
+        return password, adsense, anonymous, mail_suffix, site_closed, read_only
     #@+node:2014fall.20140821113240.3128: *3* logout
     @cherrypy.expose
     def logout(self, *args, **kwargs):
@@ -948,26 +607,30 @@ class Pygroup(object):
     @cherrypy.expose
     def taskeditform(self, id=None, *args, **kwargs):
         user = self.printuser()
-        if self.allow_pass(user) == "no":
+        password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
+        if read_only == "yes" and user != "admin":
+            return "<a href='/'>Go to main page</a><br /><br />error, site is read only!"
+        if user == "anonymous" and anonymous != "yes":
             raise cherrypy.HTTPRedirect("login")
-        try:
-            query = Task.at(int(id)).select()
-            result = query.execute()
-            data = result.one()
-            output = "user:"+user+", owner:"+data.owner+"<br /><br />"
-            if user != data.owner:
-                if user != "admin":
-                    return output + "error! Not authorized!"
+        else:
+            try:
+                query = Task.at(int(id)).select()
+                result = query.execute()
+                data = result.one()
+                output = "user:"+user+", owner:"+data.owner+"<br /><br />"
+                if user != data.owner:
+                    if user != "admin":
+                        return output + "error! Not authorized!"
+                    else:
+                        template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
+                        mytemplate = template_lookup.get_template("taskeditform.html")
+                        return mytemplate.render(user=user, id=id, data=data)
                 else:
                     template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
                     mytemplate = template_lookup.get_template("taskeditform.html")
                     return mytemplate.render(user=user, id=id, data=data)
-            else:
-                template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
-                mytemplate = template_lookup.get_template("taskeditform.html")
-                return mytemplate.render(user=user, id=id, data=data)
-        except:
-            return "error! Not authorized!"
+            except:
+                return "error! Not authorized!"
     #@+node:2014fall.20140821113240.3130: *3* taskedit
     @cherrypy.expose
     def taskedit(self, id=None, type=None, name=None, content=None, *args, **kwargs):
@@ -975,7 +638,10 @@ class Pygroup(object):
         if id == None:
             return "error<br /><br /><a href='/'>Go to main page</a><br />"
         user = self.printuser()
-        if self.allow_pass(user) == "no":
+        password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
+        if read_only == "yes" and user != "admin":
+            return "<a href='/'>Go to main page</a><br /><br />error, site is read only!"
+        if user == "anonymous" and anonymous != "yes":
             raise cherrypy.HTTPRedirect("login")
         query = Task.at(int(id)).select()
         result = query.execute()
@@ -1028,19 +694,44 @@ class Pygroup(object):
     @cherrypy.expose
     def taskdeleteform(self, id=None, *args, **kwargs):
         user = self.printuser()
-        if self.allow_pass(user) == "no":
+        password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
+        if read_only == "yes" and user != "admin":
+            return "<a href='/'>Go to main page</a><br /><br />error, site is read only!"
+        if user == "anonymous" and anonymous != "yes":
             raise cherrypy.HTTPRedirect("login")
-        try:
-            # 這裡要區分刪除子緒或主緒資料
-            # 若刪除子緒, 則 data 只包含子緒資料, 若為主緒, 則 data 必須包含所有資料
-            # 先找出資料, 判定是否為主緒
-            query = Task.at(int(id)).select()
-            result = query.execute()
-            data = result.one()
-            owner = data.owner
-            if user != data.owner:
-                if user != "admin":
-                    return output + "error! 非資料擁有者, Not authorized!"
+        else:
+            try:
+                # 這裡要區分刪除子緒或主緒資料
+                # 若刪除子緒, 則 data 只包含子緒資料, 若為主緒, 則 data 必須包含所有資料
+                # 先找出資料, 判定是否為主緒
+                query = Task.at(int(id)).select()
+                result = query.execute()
+                data = result.one()
+                owner = data.owner
+                if user != data.owner:
+                    if user != "admin":
+                        return output + "error! 非資料擁有者, Not authorized!"
+                    else:
+                        if data.follow == 0:
+                            # 表示該資料為主緒資料
+                            # 資料要重新搜尋, 納入子資料
+                            query = Task.where((Task.id == id) | (Task.follow == id)).select()
+                            result = query.execute()
+                            data = result.all()
+                            output = "資料為主緒資料<br />"
+                            # 增加一個資料類型判斷, main 表資料為主緒
+                            type = "main"
+                        else:
+                            # 表示該資料為子緒資料
+                            # 直接採用 data 資料送到 taskdeleteform.html
+                            output = "資料為子緒資料<br />"
+                            # 增加一個資料類型判斷, alone 表資料為子緒
+                            type = "alone"
+                        output += "user:"+user+", owner:"+owner+"<br /><br />"
+                        template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
+                        mytemplate = template_lookup.get_template("taskdeleteform.html")
+                        # 這裡的 type 為所要刪除資料的類型, 為 main 或為 alone
+                        return mytemplate.render(user=user, id=id, data=data, type=type)
                 else:
                     if data.follow == 0:
                         # 表示該資料為主緒資料
@@ -1062,35 +753,17 @@ class Pygroup(object):
                     mytemplate = template_lookup.get_template("taskdeleteform.html")
                     # 這裡的 type 為所要刪除資料的類型, 為 main 或為 alone
                     return mytemplate.render(user=user, id=id, data=data, type=type)
-            else:
-                if data.follow == 0:
-                    # 表示該資料為主緒資料
-                    # 資料要重新搜尋, 納入子資料
-                    query = Task.where((Task.id == id) | (Task.follow == id)).select()
-                    result = query.execute()
-                    data = result.all()
-                    output = "資料為主緒資料<br />"
-                    # 增加一個資料類型判斷, main 表資料為主緒
-                    type = "main"
-                else:
-                    # 表示該資料為子緒資料
-                    # 直接採用 data 資料送到 taskdeleteform.html
-                    output = "資料為子緒資料<br />"
-                    # 增加一個資料類型判斷, alone 表資料為子緒
-                    type = "alone"
-                output += "user:"+user+", owner:"+owner+"<br /><br />"
-                template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
-                mytemplate = template_lookup.get_template("taskdeleteform.html")
-                # 這裡的 type 為所要刪除資料的類型, 為 main 或為 alone
-                return mytemplate.render(user=user, id=id, data=data, type=type)
-        except:
-            return "error! 無法正確查詢資料, Not authorized!"
+            except:
+                return "error! 無法正確查詢資料, Not authorized!"
     #@+node:2014fall.20140821113240.3132: *3* taskdelete
     @cherrypy.expose
     def taskdelete(self, id=None, type=None, name=None, content=None, *args, **kwargs):
         # check user and data owner
         user = self.printuser()
-        if self.allow_pass(user) == "no":
+        password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
+        if read_only == "yes" and user != "admin":
+            return "<a href='/'>Go to main page</a><br /><br />error, site is read only!"
+        if user == "anonymous" and anonymous != "yes":
             raise cherrypy.HTTPRedirect("login")
         query = Task.at(int(id)).select()
         result = query.execute()
