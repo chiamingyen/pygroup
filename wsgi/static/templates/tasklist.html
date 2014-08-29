@@ -187,8 +187,9 @@ import cgi
                         outstring += "<td>"+task.owner+"</td><td><a href='?id="+str(task.id)+"'>"+task.name+"</a></td><td>"+task.type+"</td><td>"+ \
                                     str(follow[i])+" 則回應</td><td>"+str(task.time)+"</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
                     else:
+                        ##評分功能尚未實現
                         outstring += "<td>"+task.owner+"</td><td><a href='?id="+str(task.id)+"'>"+task.name+"</a></td><td>"+task.type+"</td><td>"+ \
-                                    str(follow[i])+" 則回應</td><td>"+str(task.time)+"</td><td>"+str(task.id)+"-評分</td>"
+                                    str(follow[i])+" 則回應</td><td>"+str(task.time)+"</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
                     outstring += "</tr>"
                     i += 1
             else:
@@ -202,8 +203,9 @@ import cgi
                         outstring += "<td>"+task.owner+"</td><td><a href='?id="+str(task.id)+"'>"+task.name+"</a></td><td>"+task.type+"</td><td>"+ \
                                     str(task.time)+"</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
                     else:
+                        ## 評分功能尚未實現
                         outstring += "<td>"+task.owner+"</td><td><a href='?id="+str(task.id)+"'>"+task.name+"</a></td><td>"+task.type+"</td><td>"+ \
-                                    str(task.time)+"</td><td>"+str(task.id)+"-評分</td>"
+                                    str(task.time)+"</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
                     outstring += "</tr>"
         else:
             # 若執行緒列印則不列標題連結
@@ -234,12 +236,13 @@ import cgi
                         outstring += "<td rowspan='2'>"+task.owner+"</td><td  style='background-color: #cceeff;'><a href='?id="+str(task.id)+"'>id="+str(task.id)+"</a> - "+task.name+"</td><td  style='background-color: #cceeff;'>"+task.type+"</td><td  style='background-color: #cceeff;'>"+ \
                                     str(task.time)+"</td><td  style='background-color: #cceeff;'>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
                 else:
+                    ## 評分功能尚未實現
                     if task.follow != 0:
                         outstring += "<td rowspan='2'>"+task.owner+"</td><td  style='background-color: #cceeff;'><a href='?id="+str(task.id)+"'>id="+str(task.id)+"</a> (<a href='?id="+str(task.follow)+"'>up</a>) - "+task.name+"</td><td  style='background-color: #cceeff;'>"+task.type+"</td><td  style='background-color: #cceeff;'>"+ \
-                                    str(task.time)+"</td><td  style='background-color: #cceeff;'>"+str(task.id)+"-評分</td>"
+                                    str(task.time)+"</td><td  style='background-color: #cceeff;'>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
                     else:
                         outstring += "<td rowspan='2'>"+task.owner+"</td><td  style='background-color: #cceeff;'><a href='?id="+str(task.id)+"'>id="+str(task.id)+"</a> - "+task.name+"</td><td  style='background-color: #cceeff;'>"+task.type+"</td><td  style='background-color: #cceeff;'>"+ \
-                                    str(task.time)+"</td><td  style='background-color: #cceeff;'>"+str(task.id)+"-評分</td>"
+                                    str(task.time)+"</td><td  style='background-color: #cceeff;'>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
                 outstring += "</tr><tr><td colspan='4'>"+task.content+"</td></tr>"
         # 結束資料表格的列印
         outstring += "</table>"
