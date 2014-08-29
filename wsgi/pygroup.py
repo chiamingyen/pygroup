@@ -502,7 +502,7 @@ class Pygroup(object):
         if password == None or adsense == None or anonymous == None:
             return self.error_log("no content to save!")
         # 取出目前的設定值
-        old_password, old_adsense, old_anonymous, old_mail_suffix, old_site_closed, read_only = self.parse_config(filename=filename)
+        old_password, old_adsense, old_anonymous, old_mail_suffix, old_site_closed, old_read_only = self.parse_config(filename=filename)
         if adsense == None or password == None or password2 != old_password or password == '':
             # 傳回錯誤畫面
             return "error<br /><a href='/'>Go to main page</a><br />"
