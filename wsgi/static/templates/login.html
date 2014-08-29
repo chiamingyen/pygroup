@@ -1,0 +1,46 @@
+##encoding: utf-8
+## 取得 user 與 title 等兩個變數資料
+## 兩個 pound signs 在 Mako 語法中為註解行
+## 多行註解則使用
+<%doc>
+    這是註解
+    使用 <%! %> 表示在模組層次運作的 Python 程式碼, 可以用來 import 模組或定義相關的函式或物件
+    請注意: 一旦 taskform.html 被引入 tasklist2.html 中, 表示與程式中方法的傳送僅只於 tasklist2 函式, 並且與 taskform2 方法完全無關 (特別注意)
+</%doc>
+<%! import os %>
+<%
+    output = "<html>"
+    if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
+        output += '''
+    <head>
+        <script type="text/javascript">
+        if ((location.href.search(/http:/) != -1) && (location.href.search(/login/) != -1))     window.location= 'https://' + location.host + location.pathname + location.search;
+        </script>
+    </head>
+'''
+    else:
+        output += '''
+    <head>
+    </head>
+'''
+%>
+    <style type="text/css" media="all">
+    @import "/templates/style/base.css";
+    </style>
+    <body>
+<%
+    if site_closed == "yes":
+        output += "抱歉!目前網站關閉中, 所有用戶將暫時無法登入.<br /><br />"
+    output += '''
+請利用 Gmail 帳號登入<br /><br />
+<form method='post' action='logincheck'>
+Account:<input type='account' name='account'><br />
+Password:<input type='password' name='password'><br />
+<input type='submit' value='login'>
+</form>
+</body>
+</html>
+'''
+%>
+${output}
+

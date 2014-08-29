@@ -359,7 +359,8 @@ class Pygroup(object):
         #
         return mytemplate.render(user=user, id=id, flat=flat, method=method, data=data,  \
             page=page, item_per_page=item_per_page, ip=ip, follow=follow, keyword=keyword, \
-            adsense_content=adsense_content, read_only=read_only)
+            adsense_content=adsense_content, adsense=adsense, anonymous=anonymous, \
+            site_closed=site_closed, read_only=read_only)
         # 其餘分頁 logic 在 mako template tasklist.html 中完成
     #@+node:2015.20140824143250.2080: *3* allow_pass
     def allow_pass(self, user="anonymous"):
@@ -413,14 +414,10 @@ class Pygroup(object):
             out_file.write(data)
 
         return str(filename)+" saved!<br />"
-    #@+node:2014fall.20140821113240.3120: *3* inputform
-    @cherrypy.expose
-    def inputform(self, input1=None, input2=None):
-        return "input form"+str(input1)
-    #@+node:2014fall.20140821113240.3126: *3* login
+    #@+node:2014fall.20140821113240.3126: *3* login (old)
     @cherrypy.expose
     # 登入表單, 使用 gmail 帳號與密碼登入
-    def login(self):
+    def login_old(self):
         # 當使用者要求登入時, 將 user session 清除
         cherrypy.session["user"] = ""
         saved_password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
@@ -454,6 +451,18 @@ class Pygroup(object):
     </html>
     '''
         return output
+    #@+node:2015.20140829105017.2096: *3* login
+    @cherrypy.expose
+    # 登入表單, 使用 gmail 帳號與密碼登入
+    def login(self, *args, **kwargs):
+        # 當使用者要求登入時, 將 user session 清除
+        cherrypy.session["user"] = ""
+        saved_password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
+        
+        template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
+        mytemplate = template_lookup.get_template("login.html")
+        return mytemplate.render(site_closed=site_closed, read_only=read_only)
+
     #@+node:2014fall.20140821113240.3127: *3* logincheck
     @cherrypy.expose
     def logincheck(self, account=None, password=None):

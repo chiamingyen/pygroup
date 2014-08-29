@@ -14,7 +14,7 @@ import os
 
 <html>
         <head>
-                <title>Cherrypy Mako usermenu.html</title>
+                <title>Pygroup 群組資料管理</title>
 <script type="text/javascript" src="/static/syntaxhighlighter/shCore.js"></script>
 <script type="text/javascript" src="/static/syntaxhighlighter/shBrushJScript.js"></script>
 <script type="text/javascript" src="/static/syntaxhighlighter/shBrushJava.js"></script>
@@ -109,6 +109,19 @@ import cgi
         outstring += " <a href='login'>Login</a> "
     if user == "admin":
         outstring += " <a href='editconfigform'>Config</a> <a href='editadsenseform'>Adsense Config</a>"
+    # 對管理者列出 site_closed: yes 的通知
+        if site_closed == "yes":
+            outstring += "<br /> 注意: 目前網站關閉中, 只有管理者可以登入!"
+        else:
+            outstring += "<br /> 注意: 目前網站對外開放!"
+        if adsense == "yes":
+            outstring += "<br /> 注意: 目前網站會列出 Adsense 廣告!"
+        else:
+            outstring += "<br /> 注意: 目前網站不會列出 Adsense 廣告!"
+        if anonymous == "no":
+            outstring += "<br /> 注意: 目前使用者必須登入才可檢視資料!"
+        else:
+            outstring += "<br /> 注意: 目前 anonymous 可檢視資料!"
     outstring += "<br /><br />"
     outstring += "IP:"+ip+"<br /><br />"
     # 若在雲端執行, 加上 Google 廣告

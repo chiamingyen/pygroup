@@ -42,6 +42,7 @@
 <v t="2014spring.20140803093407.1974" a="E"><vh>@path static</vh>
 <v t="2014spring.20140803093407.1975" a="E"><vh>@path templates</vh>
 <v t="2014spring.20140803093407.1979"><vh>@edit usermenu.html</vh></v>
+<v t="2015.20140829105017.2097"><vh>@edit login.html</vh></v>
 <v t="2014spring.20140804092018.1988"><vh>@edit tasklist.html</vh></v>
 <v t="2014spring.20140805082611.1991"><vh>@edit taskform.html</vh></v>
 <v t="2014spring.20140818083129.2252"><vh>@edit taskeditform.html</vh></v>
