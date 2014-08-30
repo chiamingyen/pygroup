@@ -56,6 +56,12 @@ import cgi
 import hashlib
 # for unescape content
 import html.parser
+# for logging
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
+logger = logging.getLogger( __name__ )
 
 ########################### 2. 設定近端與遠端目錄
 # 確定程式檔案所在目錄, 在 Windows 有最後的反斜線

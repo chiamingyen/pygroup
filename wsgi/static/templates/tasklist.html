@@ -301,7 +301,8 @@ import cgi
         outstring += " <a href='editconfigform'>Config</a> <a href='editadsenseform'>Adsense Config</a>"
 %>
 ${outstring}
-% if (myfollow == 0 and read_only != "yes") or user == "admin":
+## 因為只允許雙層資料緒, 因此即使是 admin 用戶對於子緒資料也不列出回應表單
+% if myfollow == 0 and read_only != "yes":
         <br />
         ##id = ${id} <br />
         ##myfollow 值為: ${myfollow} <br />
