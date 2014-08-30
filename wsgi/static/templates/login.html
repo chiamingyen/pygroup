@@ -9,9 +9,9 @@
 </%doc>
 <%! import os %>
 <%
-    output = "<html>"
+    header = "<html>"
     if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
-        output += '''
+        header += '''
     <head>
         <script type="text/javascript">
         if ((location.href.search(/http:/) != -1) && (location.href.search(/login/) != -1))     window.location= 'https://' + location.host + location.pathname + location.search;
@@ -19,16 +19,18 @@
     </head>
 '''
     else:
-        output += '''
+        header += '''
     <head>
     </head>
 '''
 %>
-    <style type="text/css" media="all">
-    @import "/templates/style/base.css";
-    </style>
-    <body>
+${header}
+<style type="text/css" media="all">
+@import "/templates/style/base.css";
+</style>
+<body>
 <%
+    output = ''
     if site_closed == "yes":
         output += "抱歉!目前網站關閉中, 所有用戶將暫時無法登入.<br /><br />"
     output += '''
@@ -43,4 +45,5 @@ Password:<input type='password' name='password'><br />
 '''
 %>
 ${output}
+
 
