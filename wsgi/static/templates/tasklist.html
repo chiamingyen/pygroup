@@ -124,8 +124,8 @@ import cgi
             outstring += "<br /> 注意: 目前 anonymous 可檢視資料!"
     outstring += "<br /><br />"
     outstring += "IP:"+ip+"<br /><br />"
-    # 若在雲端執行, 加上 Google 廣告
-    if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
+    # 若在雲端執行, 且不是管理者, 加上 Google 廣告
+    if 'OPENSHIFT_REPO_DIR' in os.environ.keys() and user != "admin":
         outstring += adsense_content
     if keyword != None:
         myfollow = 0
