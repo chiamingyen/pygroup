@@ -301,7 +301,7 @@ import cgi
 %>
 ${outstring}
 ## 因為只允許雙層資料緒, 因此即使是 admin 用戶對於子緒資料也不列出回應表單
-% if myfollow == 0 and read_only != "yes":
+% if (myfollow == 0 and read_only != "yes") or (myfollow == 0 and user == "admin"):
         <br />
         ##id = ${id} <br />
         ##myfollow 值為: ${myfollow} <br />
