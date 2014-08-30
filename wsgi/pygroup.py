@@ -58,6 +58,8 @@ import hashlib
 import html.parser
 # for logging
 import logging
+# for strip_tags
+import re
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -276,7 +278,10 @@ class Pygroup(object):
         #invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
         #content = self.clean_html(content, invalid_tags)
         valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
-        content = self.html_filter(content, valid_tags)
+        tags = ''
+        for tag in valid_tags:
+            tags += tag
+        content = self.strip_tags(content, tags)
         # 這裡要除掉 </br> 關閉 break 的標註, 否則在部分瀏覽器會產生額外的跳行
         content = str(content).replace('</br>', '')
         time_elapsed = round(time.time() - start_time, 5)
@@ -384,6 +389,34 @@ class Pygroup(object):
                 match.replaceWithChildren()
         return soup
 
+    #@+node:2015.20140830081045.4015: *3* strip_tags
+    ## Remove xml style tags from an input string.
+    #
+    #  @param string The input string.
+    #  @param allowed_tags A string to specify tags which should not be removed.
+    def strip_tags(self, string, allowed_tags=''):
+      if allowed_tags != '':
+        # Get a list of all allowed tag names.
+        allowed_tags_list = re.sub(r'[\\/<> ]+', '', allowed_tags).split(',')
+        allowed_pattern = ''
+        for s in allowed_tags_list:
+          if s == '':
+           continue;
+          # Add all possible patterns for this tag to the regex.
+          if allowed_pattern != '':
+            allowed_pattern += '|'
+          allowed_pattern += '<' + s + ' [^><]*>$|<' + s + '>|<!--' + s + '-->'
+        # Get all tags included in the string.
+        all_tags = re.findall(r'<!--?[^--><]+>', string, re.I)
+        for tag in all_tags:
+          # If not allowed, replace it.
+          if not re.match(allowed_pattern, tag, re.I):
+            string = string.replace(tag, '')
+      else:
+        # If no allowed tags, remove all.
+        string = re.sub(r'<[^>]*?>', '', string)
+     
+      return string
     #@+node:2015.20140826221446.2092: *3* html_filter
     # valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
     def html_filter(self, html, valid_tags):
@@ -672,7 +705,11 @@ class Pygroup(object):
         #invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
         #content = self.clean_html(content, invalid_tags)
         valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
-        content = self.html_filter(content, valid_tags)
+        tags = ''
+        for tag in valid_tags:
+            tags += tag
+        content = self.strip_tags(content, tags)
+        #content = self.html_filter(content, valid_tags)
         # 這裡要除掉 </br> 關閉 break 的標註, 否則在部分瀏覽器會產生額外的跳行
         content = str(content).replace('</br>', '')
         
