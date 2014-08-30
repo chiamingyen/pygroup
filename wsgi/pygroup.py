@@ -677,7 +677,8 @@ class Pygroup(object):
             else:
                 query = Task.at(int(id)).update(type=type, name=name, content=content, time=str(now))
                 query.execute()
-                output += "<a href='/'>Go to main page</a><br /><br />"
+                output += "<a href='/'>Go to main page</a><br />"
+                output +="<a href='/taskeditform?id="+str(id)+"'>繼續編輯</a><br /><br />"
                 output += '''以下資料已經更新:<br /><br />
                 owner:'''+data.owner+'''<br />
                 name:'''+name+'''<br />
@@ -686,10 +687,12 @@ class Pygroup(object):
                 content:'''+str(content)+'''<br /><br />
                 <a href='/'>Go to main page</a><br />
     '''
+                output +="<a href='/taskeditform?id="+str(id)+"'>繼續編輯</a><br />"
         else:
             query = Task.at(int(id)).update(type=type, name=name, content=str(content), time=str(now))
             query.execute()
-            output += "<a href='/'>Go to main page</a><br /><br />"
+            output += "<a href='/'>Go to main page</a><br />"
+            output +="<a href='/taskeditform?id="+str(id)+"'>繼續編輯</a><br /><br />"
             output += '''以下資料已經更新:<br /><br />
             owner:'''+data.owner+'''<br />
             name:'''+name+'''<br />
@@ -698,6 +701,8 @@ class Pygroup(object):
             content:'''+str(content)+'''<br /><br />
             <a href='/'>Go to main page</a><br />
     '''
+            output +="<a href='/taskeditform?id="+str(id)+"'>繼續編輯</a><br />"
+            
         return output
     #@+node:2014fall.20140821113240.3131: *3* taskdeleteform
     @cherrypy.expose
