@@ -341,7 +341,6 @@ def syntaxhighlight():
 <script type="text/javascript" src="/static/syntaxhighlighter/shBrushPhp.js"></script>
 <script type="text/javascript" src="/static/syntaxhighlighter/shBrushCpp.js"></script>
 <script type="text/javascript" src="/static/syntaxhighlighter/shBrushCss.js"></script>
-<script type="text/javascript" src="/static/syntaxhighlighter/shBrushCSharp.js"></script>
 <link type="text/css" rel="stylesheet" href="/static/syntaxhighlighter/css/shCoreDefault.css"/>
 <script type="text/javascript">SyntaxHighlighter.all();</script>
 '''
@@ -364,7 +363,7 @@ width : "800",
 height : "600",
 element_format : "html",
 language : "en",
-plugins : "autosave,pagebreak,style,layer,table,save,advimage,advlink,advhr,emotions,iespell,"
+plugins : "autolink,autosave,pagebreak,style,layer,table,save,advimage,advlink,advhr,emotions,iespell,"
         + "insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,"
         + "noneditable,visualchars,nonbreaking,xhtmlxtras,template,wordcount,media,lists,syntaxhl",
 
