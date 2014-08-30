@@ -288,7 +288,7 @@ import cgi
     else:
         outstring += "no data!"
     # 若在雲端執行, 加上 Google 廣告
-    if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
+    if 'OPENSHIFT_REPO_DIR' in os.environ.keys() and user != "admin":
         outstring += "<br />"+adsense_content
     # 這裡再加上表單
     outstring += "<br /><br /><a href='/'>Go to main page</a> (<a href='?desc=1'>最新在前</a>) (<a href='?flat=1'>flat</a> (<a href='?flat=1&desc=1'>flat 最新在前</a>))"
