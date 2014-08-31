@@ -14,7 +14,7 @@ if id != 0:
     output += "以下將新增 id="+str(id)+" 的回應資料<br /><br />"
 output += '''
 <form method='post' action='taskaction'>
-tasktype:<input type='type' name='type'><br />
+tasktype:<input type='text' name='type'><br />
 '''
 if id != 0:
     # 取得與 id 對應的 task 標題, 做為子緒資料的 default 標題, 但使用者可以自行更改
@@ -27,7 +27,7 @@ if id != 0:
     except:
         raise cherrypy.HTTPRedirect("/")
 else:
-    output += "taskname:<input type='name' name='name'><br />"
+    output += "taskname:<input type='text' name='name'><br />"
 output += '''
 taskcontent:<textarea class='simply-editor' name='content' cols='50' rows='10'></textarea><br />
 '''

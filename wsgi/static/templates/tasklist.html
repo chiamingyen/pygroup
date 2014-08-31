@@ -121,8 +121,12 @@ import cgi
             outstring += "<br /> 注意: 目前使用者必須登入才可檢視資料!"
         else:
             outstring += "<br /> 注意: 目前 anonymous 可檢視資料!"
+        if read_only == "yes":
+            outstring += "<br /> 注意: 目前網站只能 read only!"
+        else:
+            outstring += "<br /> 注意: 目前使用者可以新增刪除編輯!"
     outstring += "<br /><br />"
-    outstring += "IP:"+ip+"<br /><br />"
+    outstring += "IP:"+ip+" 使用者:"+user+"<br /><br />"
     # 若在雲端執行, 且不是管理者, 加上 Google 廣告
     if 'OPENSHIFT_REPO_DIR' in os.environ.keys() and user != "admin":
         outstring += adsense_content

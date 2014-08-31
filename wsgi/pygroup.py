@@ -264,30 +264,49 @@ class Pygroup(object):
         return mytemplate.render(user=user, id=id)
     #@+node:2014fall.20140821113240.3114: *3* taskaction
     @cherrypy.expose
-    def taskaction(self, type=None, name = None, follow=0, content=None, ip=None, *args, **kwargs):
-        start_time = time.time()
-        owner = self.printuser()
-        if self.allow_pass(owner) == "no":
-            raise cherrypy.HTTPRedirect("login")
-        ip = self.client_ip()
-        now = datetime.datetime.now(pytz.timezone('Asia/Taipei')).strftime('%Y-%m-%d %H:%M:%S')
-        # user 若帶有 @ 則用 at 代替
-        if "@" in owner:
-            owner = owner.replace('@', 'at')
-        content = content.replace('\n', '')
-        #invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
-        #content = self.clean_html(content, invalid_tags)
-        valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
-        tags = ''
-        for tag in valid_tags:
-            tags += tag
-        content = self.strip_tags(content, tags)
-        # 這裡要除掉 </br> 關閉 break 的標註, 否則在部分瀏覽器會產生額外的跳行
-        content = str(content).replace('</br>', '')
-        time_elapsed = round(time.time() - start_time, 5)
-        Task.create(owner=owner, name=str(name), type=type, time=str(now), follow=follow, content=content, ip=str(ip))
-
-        raise cherrypy.HTTPRedirect("tasklist")
+    def taskaction(self, type=None, name=None, follow=0, content=None, ip=None, *args, **kwargs):
+        if content == None or name == "":
+            return "標題與內容都不可空白!<br /><a href='/'>Go to main page</a><br />"
+        else:
+            start_time = time.time()
+            owner = self.printuser()
+            if self.allow_pass(owner) == "no":
+                raise cherrypy.HTTPRedirect("login")
+            ip = self.client_ip()
+            now = datetime.datetime.now(pytz.timezone('Asia/Taipei')).strftime('%Y-%m-%d %H:%M:%S')
+            # user 若帶有 @ 則用 at 代替
+            if "@" in owner:
+                owner = owner.replace('@', 'at')
+            content = content.replace('\n', '')
+            #invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
+            #content = self.clean_html(content, invalid_tags)
+            valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
+            tags = ''
+            for tag in valid_tags:
+                tags += tag
+            content = self.strip_tags(content, tags)
+            # 這裡要除掉 </br> 關閉 break 的標註, 否則在部分瀏覽器會產生額外的跳行
+            content = str(content).replace('</br>', '')
+            time_elapsed = round(time.time() - start_time, 5)
+            # last insert id 為 data.id
+            data = Task.create(owner=owner, name=str(name), type=type, time=str(now), follow=follow, content=content, ip=str(ip))
+            
+            # 這裡要與 taskedit 相同, 提供回到首頁或繼續編輯按鈕
+            output = "<a href='/'>Go to main page</a><br />"
+            output +="<a href='/taskeditform?id="+str(data.id)+"'>繼續編輯</a><br /><br />"
+            output += '''以下資料已經更新:<br /><br />
+            owner:'''+owner+'''<br />
+            name:'''+name+'''<br />
+            type:'''+type+'''<br />
+            time:'''+str(now)+'''<br />
+            content:'''+str(content)+'''<br /><br />
+            <a href='/'>Go to main page</a><br />
+        '''
+            output +="<a href='/taskeditform?id="+str(data.id)+"'>繼續編輯</a><br /><br />"
+        
+            return output
+        # 原先直接轉到 tasklist 方法 (index)
+        #raise cherrypy.HTTPRedirect("tasklist")
     #@+node:2014fall.20140821113240.3115: *3* index (tasklist)
     @cherrypy.expose
     # 從 tasklist 改為 index
