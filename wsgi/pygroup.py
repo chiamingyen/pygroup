@@ -315,7 +315,10 @@ class Pygroup(object):
         # 這裡不用 self.allow_pass 原因在於需要 adsense 變數
         saved_password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
         if user == "anonymous" and anonymous != "yes":
-            raise cherrypy.HTTPRedirect("login")
+            if id != 0:
+                raise cherrypy.HTTPRedirect("login?id="+id)
+            else:
+                raise cherrypy.HTTPRedirect("login")
         if adsense == "yes":
             filename = data_dir+"adsense_content"
             with open(filename, encoding="utf-8") as file:
@@ -512,18 +515,18 @@ class Pygroup(object):
     #@+node:2015.20140829105017.2096: *3* login
     @cherrypy.expose
     # 登入表單, 使用 gmail 帳號與密碼登入
-    def login(self, *args, **kwargs):
+    def login(self, id=None, *args, **kwargs):
         # 當使用者要求登入時, 將 user session 清除
         cherrypy.session["user"] = ""
         saved_password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
         
         template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
         mytemplate = template_lookup.get_template("login.html")
-        return mytemplate.render(site_closed=site_closed, read_only=read_only)
+        return mytemplate.render(site_closed=site_closed, read_only=read_only, id=id)
 
     #@+node:2014fall.20140821113240.3127: *3* logincheck
     @cherrypy.expose
-    def logincheck(self, account=None, password=None):
+    def logincheck(self, id=None, account=None, password=None):
         saved_password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
         if account != None and password != None:
             # 這裡要加入用戶名稱為 admin 的管理者登入模式
@@ -532,7 +535,7 @@ class Pygroup(object):
                 hashed_password = hashlib.sha512(password.encode('utf-8')).hexdigest()
                 if hashed_password == saved_password:
                     cherrypy.session['user'] = "admin"
-                    raise cherrypy.HTTPRedirect("/")
+                    raise cherrypy.HTTPRedirect("/?id="+str(id))
                 else:
                     return "login failed.<br /><a href='/'>Go to main page</a><br />"
             else:
@@ -555,8 +558,8 @@ class Pygroup(object):
                         server.quit()
                         return "login failed.<br /><a href='/'>Go to main page</a><br />"
         else:
-            raise cherrypy.HTTPRedirect("login")
-        raise cherrypy.HTTPRedirect("/")
+            raise cherrypy.HTTPRedirect("login?id="+str(id))
+        raise cherrypy.HTTPRedirect("/?id="+str(id))
     #@+node:2015.20140825203447.2081: *3* editconfig
     @cherrypy.expose
     def editconfig(self, password=None, password2=None, adsense=None, anonymous=None, \

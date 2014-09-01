@@ -38,6 +38,9 @@ ${header}
 <form method='post' action='logincheck'>
 Account:<input type='account' name='account'><br />
 Password:<input type='password' name='password'><br />
+'''
+    output += "<input type='hidden' name='id' value='"+str(id)+"'>"
+    output += '''
 <input type='submit' value='login'>
 </form>
 </body>
