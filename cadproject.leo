@@ -57,12 +57,17 @@
 </v>
 </v>
 </v>
-<v t="2014fall.20140821113240.3137"><vh>@file application</vh></v>
+<v t="2014fall.20140821113240.3137" a="E"><vh>@file application</vh></v>
 <v t="2014fall.20140821113240.3105" a="E"
 expanded="2014fall.20140821113240.3108,"><vh>@file pygroup.py</vh></v>
-<v t="2014fall.20140826101705.2629" a="E"
+<v t="2014fall.20140826101705.2629"
 expanded="2014fall.20140826101705.2654,2014fall.20140826101705.2698,"><vh>@file cmsimply.py</vh></v>
+<v t="2015.20140902161836.3788" a="E"
+expanded="2015.20140902161836.3790,"><vh>@file wordnet.py</vh></v>
+<v t="2015.20140902161836.3801"
+expanded="2015.20140902161836.3803,"><vh>@file webster.py</vh></v>
 <v t="2014fall.20140821113240.2887"><vh>@file skylark.py</vh></v>
+<v t="2015.20140902161836.3840"><vh>@file pybean.py</vh></v>
 </v>
 <v t="2014spring.20140726005348.1759"><vh>@edit setup.py</vh></v>
 <v t="course-mde-tw.20140417093332.2058" a="E"><vh>利用 pandoc 進行格式轉換</vh>

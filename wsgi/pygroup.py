@@ -280,7 +280,7 @@ class Pygroup(object):
             content = content.replace('\n', '')
             #invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
             #content = self.clean_html(content, invalid_tags)
-            valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
+            valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
             tags = ''
             for tag in valid_tags:
                 tags += tag
@@ -515,7 +515,7 @@ class Pygroup(object):
     #@+node:2015.20140829105017.2096: *3* login
     @cherrypy.expose
     # 登入表單, 使用 gmail 帳號與密碼登入
-    def login(self, id=None, *args, **kwargs):
+    def login(self, id=0, *args, **kwargs):
         # 當使用者要求登入時, 將 user session 清除
         cherrypy.session["user"] = ""
         saved_password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
@@ -526,7 +526,7 @@ class Pygroup(object):
 
     #@+node:2014fall.20140821113240.3127: *3* logincheck
     @cherrypy.expose
-    def logincheck(self, id=None, account=None, password=None):
+    def logincheck(self, id=0, account=None, password=None):
         saved_password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
         if account != None and password != None:
             # 這裡要加入用戶名稱為 admin 的管理者登入模式
@@ -726,7 +726,7 @@ class Pygroup(object):
         content = content.replace('\n', '')
         #invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
         #content = self.clean_html(content, invalid_tags)
-        valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
+        valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
         tags = ''
         for tag in valid_tags:
             tags += tag

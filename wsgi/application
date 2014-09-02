@@ -12,6 +12,9 @@ import cmsimply
 import pygroup
 # for createdb 
 import pymysql
+# for webster and wordnet
+import wordnet
+import webster
 
 ########################### 2. 設定近端與遠端目錄
 # 確定程式檔案所在目錄, 在 Windows 有最後的反斜線
@@ -42,6 +45,9 @@ root = pygroup.Pygroup()
 root.c = cmsimply.CMSimply()
 # 導入 Download
 root.c.download = cmsimply.Download()
+# 從 wordnet 與 webster 模組建立應用案例
+root.wordnet = wordnet.MyCheck()
+root.webster = webster.MyCheck()
 
 ########################### 4. 安排啟動設定
 # 配合程式檔案所在目錄設定靜態目錄或靜態檔案
