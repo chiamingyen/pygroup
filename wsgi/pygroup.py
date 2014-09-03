@@ -147,6 +147,10 @@ class Pygroup(object):
                 os.makedirs(data_dir+"calc_programs")
             except:
                 print("mkdir error")
+        # 若無字典檔案, 則從 local_目錄中複製
+        #if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
+            #if not os.path.isfile(data_dir+"webster_vocabulary.sqlite"):
+                # 尚未完成
         # 假如沒有 adsense_content 則建立一個空白檔案
         if not os.path.isfile(data_dir+"adsense_content"):
             try:
@@ -720,8 +724,8 @@ class Pygroup(object):
         
         # Python 3.x:
         #import html.parser
-        html_parser = html.parser.HTMLParser()
-        content = html_parser.unescape(content)
+        #html_parser = html.parser.HTMLParser()
+        #content = html_parser.unescape(content)
         # 過濾資料
         content = content.replace('\n', '')
         #invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
@@ -734,7 +738,6 @@ class Pygroup(object):
         #content = self.html_filter(content, valid_tags)
         # 這裡要除掉 </br> 關閉 break 的標註, 否則在部分瀏覽器會產生額外的跳行
         content = str(content).replace('</br>', '')
-        
         output = "user:"+user+", owner:"+data.owner+"<br /><br />"
         if user != data.owner:
             if  user != "admin":

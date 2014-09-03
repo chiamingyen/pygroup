@@ -37,6 +37,7 @@
 <v t="2015.20140828002231.2093"><vh>20140828</vh></v>
 <v t="2015.20140829105017.2095"><vh>20140829</vh></v>
 <v t="2015.20140901003454.2095"><vh>20140901</vh></v>
+<v t="2015.20140902161836.5388"><vh>20140903</vh></v>
 <v t="2015.20140826151106.2090"><vh>pygroup_config</vh></v>
 </v>
 <v t="course-mde-tw.20140417093332.2027" a="E"><vh>@path wsgi</vh>
@@ -60,9 +61,9 @@
 <v t="2014fall.20140821113240.3137" a="E"><vh>@file application</vh></v>
 <v t="2014fall.20140821113240.3105" a="E"
 expanded="2014fall.20140821113240.3108,"><vh>@file pygroup.py</vh></v>
-<v t="2014fall.20140826101705.2629"
+<v t="2014fall.20140826101705.2629" a="E"
 expanded="2014fall.20140826101705.2654,2014fall.20140826101705.2698,"><vh>@file cmsimply.py</vh></v>
-<v t="2015.20140902161836.3788" a="E"
+<v t="2015.20140902161836.3788"
 expanded="2015.20140902161836.3790,"><vh>@file wordnet.py</vh></v>
 <v t="2015.20140902161836.3801"
 expanded="2015.20140902161836.3803,"><vh>@file webster.py</vh></v>
@@ -235,6 +236,34 @@ mail_suffix:
 site_closed: yes/no
 read_only: yes/no</t>
 <t tx="2015.20140901003454.2095">若登入有用戶想要連結的 ip, 則登入後直接轉到該 ip 對應資料</t>
+<t tx="2015.20140902161836.5388">import os
+import shutil
+sourcePath = r'D:\some\path'
+destPath = r'D:\some\other\path'
+for root, dirs, files in os.walk(sourcePath):
+
+    #figure out where we're going
+    dest = destPath + root.replace(sourcePath, '')
+    
+    #if we're in a directory that doesn't exist in the destination folder
+    #then create a new folder
+    if not os.path.isdir(dest):
+        os.mkdir(dest)
+        print('Directory created at: ' + dest)
+
+    #loop through all files in the directory
+    for f in files:
+
+        #compute current (old) &amp; new file locations
+        oldLoc = root + '\\' + f
+        newLoc = dest + '\\' + f
+
+        if not os.path.isfile(newLoc):
+            try:
+                shutil.copy2(oldLoc, newLoc)
+                print('File ' + f + ' copied.')
+            except IOError:
+                print('file "' + f + '" already exists')</t>
 <t tx="course-mde-tw.20140417093332.1998"></t>
 <t tx="course-mde-tw.20140417093332.1999">QSplitter::handle {
     background-color: #CAE1FF; /* lightSteelBlue1 */
