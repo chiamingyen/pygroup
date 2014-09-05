@@ -60,6 +60,8 @@ import html.parser
 import logging
 # for strip_tags
 import re
+# for sqlite
+import sqlite3
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -80,19 +82,25 @@ else:
     download_root_dir = _curdir + "/local_data/"
     data_dir = _curdir + "/local_data/"
     template_root_dir = _curdir + "/static"
-# 建立資料庫
-
-# 改為 mysql
-# 注意 port 必須為整數, 而非字串
-if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
-    Database.set_dbapi(pymysql)
-    Database.config(host=os.environ[str('OPENSHIFT_MYSQL_DB_HOST')],  \
-        port=int(os.environ['OPENSHIFT_MYSQL_DB_PORT']), db='cadp', \
-        user=os.environ['OPENSHIFT_MYSQL_DB_USERNAME'], \
-        passwd=os.environ['OPENSHIFT_MYSQL_DB_PASSWORD'], charset='utf8')
+# 資料庫選用
+# 內建使用 sqlite3
+#ormdb = "sqlite"
+ormdb = "mysql"
+if ormdb == "sqlite":
+    Database.set_dbapi(sqlite3)
+    Database.config(db=data_dir+"task.db")
 else:
-    Database.set_dbapi(pymysql)
-    Database.config(host='localhost', port=3306, db='cadp', user='root', passwd='root', charset='utf8')
+    # 選用 mysql
+    # 注意 port 必須為整數, 而非字串
+    if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
+        Database.set_dbapi(pymysql)
+        Database.config(host=os.environ[str('OPENSHIFT_MYSQL_DB_HOST')],  \
+            port=int(os.environ['OPENSHIFT_MYSQL_DB_PORT']), db='cadp', \
+            user=os.environ['OPENSHIFT_MYSQL_DB_USERNAME'], \
+            passwd=os.environ['OPENSHIFT_MYSQL_DB_PASSWORD'], charset='utf8')
+    else:
+        Database.set_dbapi(pymysql)
+        Database.config(host='localhost', port=3306, db='cadp', user='root', passwd='root', charset='utf8')
 #@-<<declarations>>
 #@+others
 #@+node:2014fall.20140821113240.3107: ** class Task
@@ -197,44 +205,64 @@ class Pygroup(object):
                 file.close()
             except:
                 print("mkdir error")
-                
-        # 嘗試建立資料庫與資料表
-        if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
-            host=str(os.environ[str('OPENSHIFT_MYSQL_DB_HOST')])
-            port=int(os.environ[str('OPENSHIFT_MYSQL_DB_PORT')])
-            db='cadp'
-            user=str(os.environ[str('OPENSHIFT_MYSQL_DB_USERNAME')])
-            passwd=str(os.environ[str('OPENSHIFT_MYSQL_DB_PASSWORD')])
+
+        if ormdb == "sqlite":
+            # 資料庫使用 SQLite
+            try:
+                conn = sqlite3.connect(data_dir+"task.db")
+                cur = conn.cursor()
+                # 建立資料表
+                cur.execute("CREATE TABLE IF NOT EXISTS task( \
+                        id INTEGER PRIMARY KEY AUTOINCREMENT, \
+                        name TEXT, \
+                        owner TEXT, \
+                        type TEXT, \
+                        time TEXT, \
+                        content TEXT, \
+                        ip TEXT, \
+                        follow INTEGER);")
+                cur.close()
+                conn.close()
+            except:
+                print("can not create db and table")
         else:
-            host="localhost"
-            port=3306
-            db='cadp'
-            user='root'
-            passwd='root'
-        charset='utf8'
-        # 案例建立時, 就嘗試建立資料庫與資料表
-        try:
-            conn = pymysql.connect(host=host, port=port, user=user, passwd=passwd, charset=charset)
-            # 建立資料庫
-            cur = conn.cursor()
-            cur.execute("CREATE DATABASE IF NOT EXISTS "+db+";")
-            # 建立資料表
-            cur.execute("USE "+db+";")
-            cur.execute("CREATE TABLE IF NOT EXISTS `task` ( \
-                `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT, \
-                `name` VARCHAR(255) NOT NULL COLLATE 'utf8_unicode_ci', \
-                `owner` VARCHAR(255) NOT NULL COLLATE 'utf8_unicode_ci', \
-                `type` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci', \
-                `time` DATETIME NOT NULL COLLATE 'utf8_unicode_ci', \
-                `content` LONGTEXT COLLATE 'utf8_unicode_ci', \
-                `ip` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci', \
-                `follow` BIGINT(20) UNSIGNED NOT NULL DEFAULT '0', \
-                PRIMARY KEY (`id`)) \
-                COLLATE='utf8_general_ci' default charset=utf8 ENGINE=InnoDB;")
-            cur.close()
-            conn.close()
-        except:
-            print("can not create db and table")
+            # 嘗試建立資料庫與資料表
+            if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
+                host=str(os.environ[str('OPENSHIFT_MYSQL_DB_HOST')])
+                port=int(os.environ[str('OPENSHIFT_MYSQL_DB_PORT')])
+                db='cadp'
+                user=str(os.environ[str('OPENSHIFT_MYSQL_DB_USERNAME')])
+                passwd=str(os.environ[str('OPENSHIFT_MYSQL_DB_PASSWORD')])
+            else:
+                host="localhost"
+                port=3306
+                db='cadp'
+                user='root'
+                passwd='root'
+            charset='utf8'
+            # 案例建立時, 就嘗試建立資料庫與資料表
+            try:
+                conn = pymysql.connect(host=host, port=port, user=user, passwd=passwd, charset=charset)
+                # 建立資料庫
+                cur = conn.cursor()
+                cur.execute("CREATE DATABASE IF NOT EXISTS "+db+";")
+                # 建立資料表
+                cur.execute("USE "+db+";")
+                cur.execute("CREATE TABLE IF NOT EXISTS `task` ( \
+                    `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT, \
+                    `name` VARCHAR(255) NOT NULL COLLATE 'utf8_unicode_ci', \
+                    `owner` VARCHAR(255) NOT NULL COLLATE 'utf8_unicode_ci', \
+                    `type` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci', \
+                    `time` DATETIME NOT NULL COLLATE 'utf8_unicode_ci', \
+                    `content` LONGTEXT COLLATE 'utf8_unicode_ci', \
+                    `ip` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci', \
+                    `follow` BIGINT(20) UNSIGNED NOT NULL DEFAULT '0', \
+                    PRIMARY KEY (`id`)) \
+                    COLLATE='utf8_general_ci' default charset=utf8 ENGINE=InnoDB;")
+                cur.close()
+                conn.close()
+            except:
+                print("can not create db and table")
         
     #@+node:2014fall.20140821113240.3111: *3* usermenu
     @cherrypy.expose
@@ -292,9 +320,11 @@ class Pygroup(object):
             # 這裡要除掉 </br> 關閉 break 的標註, 否則在部分瀏覽器會產生額外的跳行
             content = str(content).replace('</br>', '')
             time_elapsed = round(time.time() - start_time, 5)
+            if ormdb == "sqlite":
+                # 為了避免跨執行緒使用 SQLite3, 重新 connect 資料庫
+                Database.connect()
             # last insert id 為 data.id
             data = Task.create(owner=owner, name=str(name), type=type, time=str(now), follow=follow, content=content, ip=str(ip))
-            
             # 這裡要與 taskedit 相同, 提供回到首頁或繼續編輯按鈕
             output = "<a href='/'>Go to main page</a><br />"
             output +="<a href='/taskeditform?id="+str(data.id)+"'>繼續編輯</a><br /><br />"
@@ -315,6 +345,9 @@ class Pygroup(object):
     @cherrypy.expose
     # 從 tasklist 改為 index
     def index(self, page=1, item_per_page=5, id=0, flat=0, desc=0, keyword=None, *args, **kwargs):
+        if ormdb == "sqlite":
+            # 為了避免跨執行緒使用 SQLite3, 重新 connect 資料庫
+            Database.connect()
         user = self.printuser()
         # 這裡不用 self.allow_pass 原因在於需要 adsense 變數
         saved_password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
@@ -680,6 +713,9 @@ class Pygroup(object):
     #@+node:2014fall.20140821113240.3129: *3* taskeditform
     @cherrypy.expose
     def taskeditform(self, id=None, *args, **kwargs):
+        if ormdb == "sqlite":
+            # 為了避免跨執行緒使用 SQLite3, 重新 connect 資料庫
+            Database.connect()
         user = self.printuser()
         password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
         if read_only == "yes" and user != "admin":
@@ -708,6 +744,9 @@ class Pygroup(object):
     #@+node:2014fall.20140821113240.3130: *3* taskedit
     @cherrypy.expose
     def taskedit(self, id=None, type=None, name=None, content=None, *args, **kwargs):
+        if ormdb == "sqlite":
+            # 為了避免跨執行緒使用 SQLite3, 重新 connect 資料庫
+            Database.connect()
         # check user and data owner
         if id == None:
             return "error<br /><br /><a href='/'>Go to main page</a><br />"
@@ -775,6 +814,9 @@ class Pygroup(object):
     #@+node:2014fall.20140821113240.3131: *3* taskdeleteform
     @cherrypy.expose
     def taskdeleteform(self, id=None, *args, **kwargs):
+        if ormdb == "sqlite":
+            # 為了避免跨執行緒使用 SQLite3, 重新 connect 資料庫
+            Database.connect()
         user = self.printuser()
         password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
         if read_only == "yes" and user != "admin":
@@ -840,6 +882,9 @@ class Pygroup(object):
     #@+node:2014fall.20140821113240.3132: *3* taskdelete
     @cherrypy.expose
     def taskdelete(self, id=None, type=None, name=None, content=None, *args, **kwargs):
+        if ormdb == "sqlite":
+            # 為了避免跨執行緒使用 SQLite3, 重新 connect 資料庫
+            Database.connect()
         # check user and data owner
         user = self.printuser()
         password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
