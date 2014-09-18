@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 import sys
 import time
 import dis
 import traceback
 
-from browser import doc
+from browser import document as doc
 from javascript import JSObject
 
 # set height of container to 66% of screen

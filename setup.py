@@ -6,5 +6,5 @@ setup(name='CADP Project 2014',
       author='MDE NFU Taiwan',
       author_email='example@example.com',
       url='http://www.python.org/sigs/distutils-sig/',
-      install_requires=['CherryPy', 'pytz', 'mako', 'beautifulsoup4', 'pymysql'],
+      install_requires=['CherryPy', 'pytz', 'mako', 'beautifulsoup4', 'pymysql', 'peewee'],
      )

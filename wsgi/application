@@ -87,8 +87,13 @@ if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
 else:
     # 近端執行啟動
     '''
-    cherrypy.server.socket_port = 8083
-    cherrypy.server.socket_host = '127.0.0.1'
+    cherrypy.server.socket_port = 8443
+    cherrypy.server.socket_host = 'your_ip'
+    cherrypy.server.ssl_certificate = 'new_pygroup/wsgi/ssl_cert.pem'
+    cherrypy.server.ssl_private_key = 'new_pygroup/wsgi/ssl_cert.pem'
+    cherrypy.config.update({'engine.autoreload.on':False,
+                        'log.access_file': data_dir+'/downloads/access.log',
+                        'log.error_file': data_dir+'/downloads/error.log'})
     '''
     cherrypy.quickstart(root, config = application_conf)
 #@-<<declarations>>

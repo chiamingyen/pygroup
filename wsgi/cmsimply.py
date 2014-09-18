@@ -683,8 +683,10 @@ class CMSimply(object):
     # if there is no utf-8 encoding, no Chinese input available
     'tools.encode.encoding': 'utf-8',
     'tools.sessions.on' : True,
-    'tools.sessions.storage_type' : 'file',
+    # storage_type could be 'ram', 'file', 'cookie' or 'custom'
+    'tools.sessions.storage_type' : 'ram',
     #'tools.sessions.locking' : 'explicit',
+    'tools.sessions.locking' : 'early',
     'tools.sessions.storage_path' : data_dir+'/tmp',
     # session timeout is 60 minutes
     'tools.sessions.timeout' : 60,
@@ -1762,7 +1764,7 @@ if (!newfile.Status) {
     <meta http-equiv="content-type" content="text/html;charset=utf-8">
     <link rel="stylesheet" type="text/css" href="/static/console.css">
     <link rel="stylesheet" type="text/css" href="/static/brython.css">
-    <script type="text/javascript" src="/static/Brython2.1.4-20140810-083054/brython.js"></script>
+    <script type="text/javascript" src="/static/Brython2.2.0rc0-20140913-093500/brython.js"></script>
     <script src="https://togetherjs.com/togetherjs-min.js"></script>
     <script src="/static/ace/src-min-noconflict/ace.js" type="text/javascript">
     </script>
@@ -2055,7 +2057,7 @@ if (!newfile.Status) {
     <html>
     <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8">
-    <script type="text/javascript" src="/static/Brython2.1.4-20140810-083054/brython.js"></script>
+    <script type="text/javascript" src="/static/Brython2.2.0rc0-20140913-093500/brython.js"></script>
     <script type="text/javascript" src="/static/socialcalc/socialcalcconstants.js"></script>
     <script type="text/javascript" src="/static/socialcalc/socialcalc-3.js"></script>
     <script type="text/javascript" src="/static/socialcalc/socialcalctableeditor.js"></script>
@@ -2247,7 +2249,7 @@ if (!newfile.Status) {
     <html>
     <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8">
-    <script type="text/javascript" src="/static/Brython2.1.4-20140810-083054/brython.js"></script>
+    <script type="text/javascript" src="/static/Brython2.2.0rc0-20140913-093500/brython.js"></script>
     <script type="text/javascript" src="/static/socialcalc/socialcalcconstants.js"></script>
     <script type="text/javascript" src="/static/socialcalc/socialcalc-3.js"></script>
     <script type="text/javascript" src="/static/socialcalc/socialcalctableeditor.js"></script>

@@ -15,7 +15,7 @@
 <v t="course-mde-tw.20140417093332.2000"><vh>@string initial_split_orientation = horizontal</vh></v>
 <v t="course-mde-tw.20140417093332.2001"><vh>@string rst3_write_intermediate_extension = .rst</vh></v>
 </v>
-<v t="2014spring.20140723175454.2635" a="E"><vh>2014Fall 電腦輔助設計實習專案</vh>
+<v t="2014spring.20140723175454.2635" a="E"><vh>2014Fall CP 雲端課程專案</vh>
 <v t="2014fall.20140821113240.3140"><vh>帳號驗證</vh></v>
 <v t="2014fall.20140821113240.3145"><vh>近端 MySQL 工具</vh></v>
 <v t="2014fall.20140821113240.3139" a="E"><vh>資料庫 ORM</vh>
@@ -39,9 +39,12 @@
 <v t="2015.20140901003454.2095"><vh>20140901</vh></v>
 <v t="2015.20140902161836.5388"><vh>20140903</vh></v>
 <v t="2015.20140826151106.2090"><vh>pygroup_config</vh></v>
+<v t="2015.20140916184224.2608"><vh>20140916 多人連線問題</vh></v>
+<v t="2015.20140917185942.2149"><vh>PostgreSQL 相關變數</vh></v>
 </v>
 <v t="course-mde-tw.20140417093332.2027" a="E"><vh>@path wsgi</vh>
 <v t="2014spring.20140803093407.1974" a="E"><vh>@path static</vh>
+<v t="2015.20140912081657.3041"><vh>@edit editor.py</vh></v>
 <v t="2014spring.20140803093407.1975" a="E"><vh>@path templates</vh>
 <v t="2014spring.20140803093407.1979"><vh>@edit usermenu.html</vh></v>
 <v t="2015.20140829105017.2097"><vh>@edit login.html</vh></v>
@@ -63,11 +66,12 @@
 expanded="2014fall.20140821113240.3108,"><vh>@file pygroup.py</vh></v>
 <v t="2014fall.20140826101705.2629" a="E"
 expanded="2014fall.20140826101705.2654,2014fall.20140826101705.2698,"><vh>@file cmsimply.py</vh></v>
-<v t="2015.20140902161836.3788"
+<v t="2015.20140902161836.3788" a="E"
 expanded="2015.20140902161836.3790,"><vh>@file wordnet.py</vh></v>
 <v t="2015.20140902161836.3801"
 expanded="2015.20140902161836.3803,"><vh>@file webster.py</vh></v>
-<v t="2014fall.20140821113240.2887"><vh>@file skylark.py</vh></v>
+<v t="2014fall.20140821113240.2887" a="E"
+expanded="2014fall.20140821113240.2945,2014fall.20140821113240.2983,2014fall.20140821113240.3027,2014fall.20140821113240.3054,"><vh>@file skylark.py</vh></v>
 <v t="2015.20140902161836.3840"><vh>@file pybean.py</vh></v>
 </v>
 <v t="2014spring.20140726005348.1759"><vh>@edit setup.py</vh></v>
@@ -125,19 +129,33 @@ CREATE TABLE `uploadfile` (
   `filename`,
   `filesize`
 )</t>
-<t tx="2014fall.20140821113240.3143">CREATE TABLE `task` (
+<t tx="2014fall.20140821113240.3143">MySQL:
+
+CREATE TABLE `task` (
 	`id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(255) NOT NULL COLLATE 'utf8_unicode_ci',
 	`owner` VARCHAR(255) NOT NULL COLLATE 'utf8_unicode_ci',
 	`type` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
 	`time` DATETIME NOT NULL,
 	`content` LONGTEXT NULL COLLATE 'utf8_unicode_ci',
-	`ip` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
+	`ip` VARCHAR(64) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
 	`follow` BIGINT(20) UNSIGNED NOT NULL DEFAULT '0',
 	PRIMARY KEY (`id`)
 )
 COLLATE='utf8_general_ci'
 ENGINE=InnoDB;
+
+SQLite:
+
+CREATE TABLE task(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            owner TEXT,
+            type TEXT,
+            time TEXT,
+            content TEXT,
+            ip TEXT,
+            follow INTEGER)
 </t>
 <t tx="2014fall.20140821113240.3144">http://skylark.readthedocs.org/en/latest/cases.html#pagination</t>
 <t tx="2014fall.20140821113240.3145">http://www.heidisql.com/</t>
@@ -147,7 +165,7 @@ http://cadp-cmsimplydemo.rhcloud.com/tasklist?id=59</t>
 <t tx="2014fall.20140821113240.3147">假如在 OpenShift 上要使用 Adsense, 唯一的方法是採用客製化符號名稱
 
 原因是 rhcloud.com 用戶眾多, 只要一個網站違反 Google 規定, 整個網域都無法使用 Adsense</t>
-<t tx="2014fall.20140826101705.4466">配置到 http://cp-2013fall.rhcloud.com/
+<t tx="2014fall.20140826101705.4466">配置到 http://2014fall-2013fall.rhcloud.com/
 
 步驟:
 
@@ -187,6 +205,8 @@ course-mde-tw 為協同人員
 <t tx="2014pythonE.20140424070658.1679"></t>
 <t tx="2014spring.20140723175454.2635">是的, 我們想要開發一個雲端群組軟體套件, 名稱為 pygroup
 
+這個版本內定使用 SQLite 資料庫
+
 基本功能:
 
 1. 讓 gmail 帳號可以登入本系統, 主要目的在讓學員可以自行管理 gmail 帳號密碼.
@@ -215,7 +235,7 @@ pygroup_config
 <t tx="2015.20140826151106.2090">password:encrypted password
 adsense:no/yes
 anonymous:no/yes
-user_mail_suffix:gm.nfu.edu.tw
+user_mail_suffix:gm.nfu.edu.tw (功能尚未置入)
 site_closed:no/yes
 
 admin 管理者密碼
@@ -236,7 +256,9 @@ mail_suffix:
 site_closed: yes/no
 read_only: yes/no</t>
 <t tx="2015.20140901003454.2095">若登入有用戶想要連結的 ip, 則登入後直接轉到該 ip 對應資料</t>
-<t tx="2015.20140902161836.5388">import os
+<t tx="2015.20140902161836.5388">原先考慮要利用 shutil 複製檔案用
+
+import os
 import shutil
 sourcePath = r'D:\some\path'
 destPath = r'D:\some\other\path'
@@ -264,6 +286,17 @@ for root, dirs, files in os.walk(sourcePath):
                 print('File ' + f + ' copied.')
             except IOError:
                 print('file "' + f + '" already exists')</t>
+<t tx="2015.20140916184224.2608">先前已經完成 skylark ORM 版本
+
+目前改用 peewee ORM, 已經測試 SQLite 與 MySQL, 準備加入近端與雲端上的 PostgreSQL</t>
+<t tx="2015.20140917185942.2149">OPENSHIFT_POSTGRESQL_DB_PASSWORD
+OPENSHIFT_POSTGRESQL_DB_HOST
+OPENSHIFT_POSTGRESQL_DB_GEAR_DNS
+OPENSHIFT_POSTGRESQL_DB_USERNAME
+OPENSHIFT_POSTGRESQL_DB_GEAR_UUID
+OPENSHIFT_POSTGRESQL_DB_URL
+OPENSHIFT_POSTGRESQL_VERSION
+OPENSHIFT_POSTGRESQL_DB_PORT</t>
 <t tx="course-mde-tw.20140417093332.1998"></t>
 <t tx="course-mde-tw.20140417093332.1999">QSplitter::handle {
     background-color: #CAE1FF; /* lightSteelBlue1 */

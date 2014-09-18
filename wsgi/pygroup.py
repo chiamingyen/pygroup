@@ -48,7 +48,7 @@ import time
 # for mysql
 import pymysql
 # for skylark
-from skylark import Database, Model, Field, PrimaryKey, ForeignKey
+#from skylark import Database, Model, Field, PrimaryKey, ForeignKey
 # use cgi.escape() to resemble php htmlspecialchars()
 # use cgi.escape() or html.escape to generate data for textarea tag, otherwise Editor can not deal with some Javascript code.
 import cgi
@@ -62,10 +62,14 @@ import logging
 import re
 # for sqlite
 import sqlite3
+# 用於 pybean 資料儲存
+from pybean import Store, SQLiteWriter
+# 再 try peewee
+from peewee import SqliteDatabase, Model, CharField, TextField, IntegerField, MySQLDatabase
 
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
 
-logger = logging.getLogger( __name__ )
+#logger = logging.getLogger( __name__ )
 
 ########################### 2. 設定近端與遠端目錄
 # 確定程式檔案所在目錄, 在 Windows 有最後的反斜線
@@ -84,38 +88,55 @@ else:
     template_root_dir = _curdir + "/static"
 # 資料庫選用
 # 內建使用 sqlite3
-#ormdb = "sqlite"
-ormdb = "mysql"
+ormdb = "sqlite"
+#ormdb = "mysql"
+#ormdb = "postgresql"
 if ormdb == "sqlite":
-    Database.set_dbapi(sqlite3)
-    Database.config(db=data_dir+"task.db")
-else:
-    # 選用 mysql
+    # 針對 sqlite3 指定資料庫檔案
+    db = SqliteDatabase(data_dir+"task.db", check_same_thread=False)
+
+elif ormdb == "mysql":
+    # 選用 MySQL
     # 注意 port 必須為整數, 而非字串
     if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
-        Database.set_dbapi(pymysql)
-        Database.config(host=os.environ[str('OPENSHIFT_MYSQL_DB_HOST')],  \
-            port=int(os.environ['OPENSHIFT_MYSQL_DB_PORT']), db='cadp', \
+        db = MySQLDatabase(database='cadp', host=os.environ[str('OPENSHIFT_MYSQL_DB_HOST')],  \
+            port=int(os.environ['OPENSHIFT_MYSQL_DB_PORT']), \
             user=os.environ['OPENSHIFT_MYSQL_DB_USERNAME'], \
             passwd=os.environ['OPENSHIFT_MYSQL_DB_PASSWORD'], charset='utf8')
     else:
-        Database.set_dbapi(pymysql)
-        Database.config(host='localhost', port=3306, db='cadp', user='root', passwd='root', charset='utf8')
+        # peewee 版本
+        db = MySQLDatabase(database='cadp', host='localhost', \
+             port=3306, user='root', passwd='root', charset='utf8')
+else:
+    # 選用 PostgreSQL
+    # 注意 port 必須為整數, 而非字串
+    if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
+        db = PostgreSQLDatabase(database='cadp', host=os.environ[str('OPENSHIFT_POSTGRESQL_DB_HOST')],  \
+            port=int(os.environ['OPENSHIFT_POSTGRESQL_DB_PORT']), \
+            user=os.environ['OPENSHIFT_POSTGRESQL_DB_USERNAME'], \
+            passwd=os.environ['OPENSHIFT_POSTGRESQL_DB_PASSWORD'], charset='utf8')
+    else:
+        # peewee 版本
+        db = PostgreSQLDatabase(database='cadp', host='localhost', \
+             port=3306, user='root', passwd='root', charset='utf8')
 #@-<<declarations>>
 #@+others
 #@+node:2014fall.20140821113240.3107: ** class Task
 # 在此建立資料表欄位
-# 請注意, 此資料類別必須繼承 skylark 的 Model 類別
-# 記得導入 from skylark import Database, Model, Field, PrimaryKey, ForeignKey
+    
 class Task(Model):
-    id = PrimaryKey()
-    follow = Field()
-    owner = Field()
-    name = Field()
-    type = Field()
-    time = Field()
-    content = Field()
-    ip = Field()
+    # peewee 內定 id 為 PrimaryKey
+    #id = PrimaryKey()
+    follow = IntegerField()
+    owner = CharField()
+    name = CharField()
+    type = CharField()
+    time = CharField()
+    content = TextField()
+    ip = CharField()
+
+    class Meta:
+        database = db # This model uses the data_dir+"task.db" database.
 #@+node:2014fall.20140821113240.3108: ** class Pygroup
 ########################### 3. 建立主物件
 class Pygroup(object):
@@ -123,8 +144,9 @@ class Pygroup(object):
     # if there is no utf-8 encoding, no Chinese input available
     'tools.encode.encoding': 'utf-8',
     'tools.sessions.on' : True,
-    'tools.sessions.storage_type' : 'file',
+    'tools.sessions.storage_type' : 'ram',
     #'tools.sessions.locking' : 'explicit',
+    'tools.sessions.locking' : 'early',
     'tools.sessions.storage_path' : data_dir+'/tmp',
     # session timeout is 60 minutes
     'tools.sessions.timeout' : 60,
@@ -208,6 +230,7 @@ class Pygroup(object):
 
         if ormdb == "sqlite":
             # 資料庫使用 SQLite
+            # 這裡應該要使用 peewee 建立資料庫與表格
             try:
                 conn = sqlite3.connect(data_dir+"task.db")
                 cur = conn.cursor()
@@ -225,8 +248,9 @@ class Pygroup(object):
                 conn.close()
             except:
                 print("can not create db and table")
-        else:
+        elif ormdb == "mysql":
             # 嘗試建立資料庫與資料表
+            # 這裡應該要使用 peewee 建立資料庫與表格
             if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
                 host=str(os.environ[str('OPENSHIFT_MYSQL_DB_HOST')])
                 port=int(os.environ[str('OPENSHIFT_MYSQL_DB_PORT')])
@@ -263,7 +287,47 @@ class Pygroup(object):
                 conn.close()
             except:
                 print("can not create db and table")
-        
+        else:
+            # 使用 PostgreSQL
+            # 嘗試建立資料庫與資料表
+            # 這裡應該要使用 peewee 建立資料庫與表格
+            if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
+                host=str(os.environ[str('OPENSHIFT_POSTGRESQL_DB_HOST')])
+                port=int(os.environ[str('OPENSHIFT_POSTGRESQL_DB_PORT')])
+                db='cadp'
+                user=str(os.environ[str('OPENSHIFT_POSTGRESQL_DB_USERNAME')])
+                passwd=str(os.environ[str('OPENSHIFT_POSTGRESQL_DB_PASSWORD')])
+            else:
+                host="localhost"
+                port=3306
+                db='cadp'
+                user='root'
+                passwd='root'
+            charset='utf8'
+            # 案例建立時, 就嘗試建立資料庫與資料表
+            try:
+                conn = pymysql.connect(host=host, port=port, user=user, passwd=passwd, charset=charset)
+                # 建立資料庫
+                cur = conn.cursor()
+                cur.execute("CREATE DATABASE IF NOT EXISTS "+db+";")
+                # 建立資料表
+                cur.execute("USE "+db+";")
+                cur.execute("CREATE TABLE IF NOT EXISTS `task` ( \
+                    `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT, \
+                    `name` VARCHAR(255) NOT NULL COLLATE 'utf8_unicode_ci', \
+                    `owner` VARCHAR(255) NOT NULL COLLATE 'utf8_unicode_ci', \
+                    `type` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci', \
+                    `time` DATETIME NOT NULL COLLATE 'utf8_unicode_ci', \
+                    `content` LONGTEXT COLLATE 'utf8_unicode_ci', \
+                    `ip` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci', \
+                    `follow` BIGINT(20) UNSIGNED NOT NULL DEFAULT '0', \
+                    PRIMARY KEY (`id`)) \
+                    COLLATE='utf8_general_ci' default charset=utf8 ENGINE=InnoDB;")
+                cur.close()
+                conn.close()
+            except:
+                print("can not create db and table")
+      
     #@+node:2014fall.20140821113240.3111: *3* usermenu
     @cherrypy.expose
     def usermenu(self):
@@ -306,12 +370,13 @@ class Pygroup(object):
                 raise cherrypy.HTTPRedirect("login")
             ip = self.client_ip()
             now = datetime.datetime.now(pytz.timezone('Asia/Taipei')).strftime('%Y-%m-%d %H:%M:%S')
+            '''
+            # 因為登入後就將 @ 代換為 _at_, 所以此地不用再換
             # user 若帶有 @ 則用 at 代替
             if "@" in owner:
-                owner = owner.replace('@', 'at')
+                owner = owner.replace('@', '_at_')
+            '''
             content = content.replace('\n', '')
-            #invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
-            #content = self.clean_html(content, invalid_tags)
             valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
             tags = ''
             for tag in valid_tags:
@@ -320,11 +385,11 @@ class Pygroup(object):
             # 這裡要除掉 </br> 關閉 break 的標註, 否則在部分瀏覽器會產生額外的跳行
             content = str(content).replace('</br>', '')
             time_elapsed = round(time.time() - start_time, 5)
-            if ormdb == "sqlite":
-                # 為了避免跨執行緒使用 SQLite3, 重新 connect 資料庫
-                Database.connect()
             # last insert id 為 data.id
+            db.connect()
+            # peewee 版本
             data = Task.create(owner=owner, name=str(name), type=type, time=str(now), follow=follow, content=content, ip=str(ip))
+            data.save()
             # 這裡要與 taskedit 相同, 提供回到首頁或繼續編輯按鈕
             output = "<a href='/'>Go to main page</a><br />"
             output +="<a href='/taskeditform?id="+str(data.id)+"'>繼續編輯</a><br /><br />"
@@ -337,7 +402,7 @@ class Pygroup(object):
             <a href='/'>Go to main page</a><br />
         '''
             output +="<a href='/taskeditform?id="+str(data.id)+"'>繼續編輯</a><br /><br />"
-        
+            db.close()
             return output
         # 原先直接轉到 tasklist 方法 (index)
         #raise cherrypy.HTTPRedirect("tasklist")
@@ -345,9 +410,6 @@ class Pygroup(object):
     @cherrypy.expose
     # 從 tasklist 改為 index
     def index(self, page=1, item_per_page=5, id=0, flat=0, desc=0, keyword=None, *args, **kwargs):
-        if ormdb == "sqlite":
-            # 為了避免跨執行緒使用 SQLite3, 重新 connect 資料庫
-            Database.connect()
         user = self.printuser()
         # 這裡不用 self.allow_pass 原因在於需要 adsense 變數
         saved_password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
@@ -372,6 +434,8 @@ class Pygroup(object):
         # 這時可再根據各筆資料列印時找出各主緒資料的附屬資料筆數
         # 加入 flat = 1 時, 列出所有資料
         # 請注意這裡直接從 tasksearchform.html 中的關鍵字查詢, 指定以 tasklist 執行, 但是無法單獨列出具有關鍵字的 task 資料, 而是子緒有關鍵字時, 也是列出主緒資料
+        # 單獨 db 連結與結束
+        db.connect()
         if keyword == None:
             if id == 0:
                 if flat == 0:
@@ -379,49 +443,38 @@ class Pygroup(object):
                     # desc 為 0 表示要 id 由小到大排序列出資料
                     if desc == 0:
                         method = "?"
-                        query = Task.where(Task.follow==0).select()
+                        data = Task.select().where(Task.follow==0)
                     else:
                         # desc 為 1 表示 id 反向排序
                         method = "?desc=1"
-                        query = Task.where(Task.follow==0).orderby(Task.id, desc=True).select()
-                    result = query.execute()
-                    data = result.all()
-
+                        data = Task.select().where(Task.follow==0).order_by(Task.id.desc())
                 else:
                     # flat 為 1 表示要列出所有資料
                     # 原先沒有反向排序, 內建使用正向排序
                     if desc == 0:
                         method = "?flat=1"
-                        query = Task.select()
+                        data = Task.select()
                     else:
                         method = "?flat=1&desc=1"
-                        query = Task.orderby(Task.id, desc=True).select()
-                    result = query.execute()
-                    data = result.all()
+                        data = Task.select().order_by(Task.id.desc())
             else:
                 method = "?id="+str(id)
                 # 設法列出主資料與其下屬資料緒, 這裡是否可以改為 recursive 追蹤多緒資料
                 # 只列出主緒與下一層子緒資料
-                query = Task.where((Task.id == id) | (Task.follow == id)).select()
-                result = query.execute()
-                data = result.all()
+                data = Task.select().where((Task.id == id) | (Task.follow == id))
         else:
             # 有關鍵字查詢時(只查 owner, content, type 與 name), 只列出主資料緒
             #flat = 1
             method = "?keyword="+keyword+"&flat="+str(flat)
-            query = Task.where((Task.content.like('%%%s%%' % (keyword))) | (Task.name.like('%%%s%%' % (keyword))) | \
-            (Task.owner.like('%%%s%%' % (keyword))) | \
-            (Task.type.like('%%%s%%' % (keyword))) \
-                ).select()
-            result = query.execute()
-            data = result.all()
+            data = Task.select().where((Task.content ** ('%%%s%%' % (keyword))) | (Task.name ** ('%%%s%%' % (keyword))) | \
+            (Task.owner ** ('%%%s%%' % (keyword))) | \
+            (Task.type ** ('%%%s%%' % (keyword))) \
+                )
         follow = []
         for task in data:
-            # 改為 mysql
-            query = Task.where((Task.follow == task.id)).select()
-            result = query.execute()
-            follow_data = result.all()
-            follow.append(len(follow_data))
+            follow_data = Task.select().where(Task.follow == task.id).count()
+            follow.append(follow_data)
+        db.close()
         #
         # 送出 user, id, flat, method 與 data
         #
@@ -439,15 +492,6 @@ class Pygroup(object):
             return "no"
         else:
             return "yes"
-    #@+node:2014fall.20140821113240.3116: *3* clean_html
-    # invalid_tags = ['table', 'th', 'tr', 'td']
-    def clean_html(self, html, invalid_tags):
-        soup = BeautifulSoup(html)
-        for tag in invalid_tags: 
-            for match in soup.findAll(tag):
-                match.replaceWithChildren()
-        return soup
-
     #@+node:2015.20140830081045.4015: *3* strip_tags
     ## Remove xml style tags from an input string.
     #
@@ -476,21 +520,6 @@ class Pygroup(object):
         string = re.sub(r'<[^>]*?>', '', string)
      
       return string
-    #@+node:2015.20140826221446.2092: *3* html_filter
-    # valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
-    def html_filter(self, html, valid_tags):
-        soup = BeautifulSoup(html)
-        for tag in soup.findAll(True):
-            if tag.name not in valid_tags:
-                for i, x in enumerate(tag.parent.contents):
-                    if x == tag: break
-                else:
-                    #print "Can't find", tag, "in", tag.parent
-                    continue
-                for r in reversed(tag.contents):
-                    tag.parent.insert(i, r)
-                tag.extract()
-        return soup
     #@+node:2014fall.20140821113240.3117: *3* client_ip
     def client_ip(self):
         try:
@@ -512,43 +541,6 @@ class Pygroup(object):
             out_file.write(data)
 
         return str(filename)+" saved!<br />"
-    #@+node:2014fall.20140821113240.3126: *3* login (old)
-    @cherrypy.expose
-    # 登入表單, 使用 gmail 帳號與密碼登入
-    def login_old(self):
-        # 當使用者要求登入時, 將 user session 清除
-        cherrypy.session["user"] = ""
-        saved_password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
-        if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
-            output = '''
-        <html>
-        <head>
-            <script type="text/javascript">
-            if ((location.href.search(/http:/) != -1) && (location.href.search(/login/) != -1))     window.location= 'https://' + location.host + location.pathname + location.search;
-            </script>
-        </head>
-        <body>
-    '''
-        else:
-            output = '''
-        <html>
-        <head>
-        </head>
-        <body>
-    '''
-        if site_closed == "yes":
-            output += "抱歉!目前網站關閉中, 所有用戶將暫時無法登入.<br /><br />"
-        output += '''
-    請利用 Gmail 帳號登入<br /><br />
-    <form method='post' action='logincheck'>
-    Account:<input type='account' name='account'><br />
-    Password:<input type='password' name='password'><br />
-    <input type='submit' value='login'>
-    </form>
-    </body>
-    </html>
-    '''
-        return output
     #@+node:2015.20140829105017.2096: *3* login
     @cherrypy.expose
     # 登入表單, 使用 gmail 帳號與密碼登入
@@ -588,6 +580,8 @@ class Pygroup(object):
                     try:
                         server.login(account, password)
                         server.quit()
+                        if "@" in account:
+                            account = account.replace('@', '_at_')
                         cherrypy.session["user"] = account
                         #return account+" login successfully."
                         #若登入成功, 則離開前跳到根目錄
@@ -713,9 +707,6 @@ class Pygroup(object):
     #@+node:2014fall.20140821113240.3129: *3* taskeditform
     @cherrypy.expose
     def taskeditform(self, id=None, *args, **kwargs):
-        if ormdb == "sqlite":
-            # 為了避免跨執行緒使用 SQLite3, 重新 connect 資料庫
-            Database.connect()
         user = self.printuser()
         password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
         if read_only == "yes" and user != "admin":
@@ -724,29 +715,30 @@ class Pygroup(object):
             raise cherrypy.HTTPRedirect("login")
         else:
             try:
-                query = Task.at(int(id)).select()
-                result = query.execute()
-                data = result.one()
+                db.connect()
+                # 用 get() 取單筆資料
+                data = Task.select().where(Task.id==int(id)).get()
                 output = "user:"+user+", owner:"+data.owner+"<br /><br />"
                 if user != data.owner:
                     if user != "admin":
+                        db.close()
                         return output + "error! Not authorized!"
                     else:
                         template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
                         mytemplate = template_lookup.get_template("taskeditform.html")
+                        db.close()
                         return mytemplate.render(user=user, id=id, data=data)
                 else:
                     template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
                     mytemplate = template_lookup.get_template("taskeditform.html")
+                    db.close()
                     return mytemplate.render(user=user, id=id, data=data)
             except:
+                db.close()
                 return "error! Not authorized!"
     #@+node:2014fall.20140821113240.3130: *3* taskedit
     @cherrypy.expose
     def taskedit(self, id=None, type=None, name=None, content=None, *args, **kwargs):
-        if ormdb == "sqlite":
-            # 為了避免跨執行緒使用 SQLite3, 重新 connect 資料庫
-            Database.connect()
         # check user and data owner
         if id == None:
             return "error<br /><br /><a href='/'>Go to main page</a><br />"
@@ -756,10 +748,9 @@ class Pygroup(object):
             return "<a href='/'>Go to main page</a><br /><br />error, site is read only!"
         if user == "anonymous" and anonymous != "yes":
             raise cherrypy.HTTPRedirect("login")
-        query = Task.at(int(id)).select()
-        result = query.execute()
-        data = result.one()
-        now = strftime("%Y-%m-%d %H:%M:%S", localtime())
+        db.connect()
+        data = Task.select().where(Task.id==int(id)).get()
+        now = datetime.datetime.now(pytz.timezone('Asia/Taipei')).strftime('%Y-%m-%d %H:%M:%S')
         
         # Python 3.x:
         #import html.parser
@@ -767,22 +758,20 @@ class Pygroup(object):
         #content = html_parser.unescape(content)
         # 過濾資料
         content = content.replace('\n', '')
-        #invalid_tags = ['table', 'th', 'tr', 'td', 'html', 'body', 'head', 'javascript', 'script', 'tbody', 'thead', 'tfoot', 'div', 'span']
-        #content = self.clean_html(content, invalid_tags)
         valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
         tags = ''
         for tag in valid_tags:
             tags += tag
         content = self.strip_tags(content, tags)
-        #content = self.html_filter(content, valid_tags)
         # 這裡要除掉 </br> 關閉 break 的標註, 否則在部分瀏覽器會產生額外的跳行
         content = str(content).replace('</br>', '')
         output = "user:"+user+", owner:"+data.owner+"<br /><br />"
         if user != data.owner:
             if  user != "admin":
+                db.close()
                 return "error! Not authorized!"
             else:
-                query = Task.at(int(id)).update(type=type, name=name, content=content, time=str(now))
+                query = Task.update(type=type, name=name, content=content, time=str(now)).where(id==int(id))
                 query.execute()
                 output += "<a href='/'>Go to main page</a><br />"
                 output +="<a href='/taskeditform?id="+str(id)+"'>繼續編輯</a><br /><br />"
@@ -796,10 +785,10 @@ class Pygroup(object):
     '''
                 output +="<a href='/taskeditform?id="+str(id)+"'>繼續編輯</a><br />"
         else:
-            query = Task.at(int(id)).update(type=type, name=name, content=str(content), time=str(now))
+            query = Task.update(type=type, name=name, content=str(content), time=str(now)).where(Task.id==int(id))
             query.execute()
             output += "<a href='/'>Go to main page</a><br />"
-            output +="<a href='/taskeditform?id="+str(id)+"'>繼續編輯</a><br /><br />"
+            output +="<a href='/taskeditform?id="+str(database.last_insert_id)+"'>繼續編輯</a><br /><br />"
             output += '''以下資料已經更新:<br /><br />
             owner:'''+data.owner+'''<br />
             name:'''+name+'''<br />
@@ -808,15 +797,12 @@ class Pygroup(object):
             content:'''+str(content)+'''<br /><br />
             <a href='/'>Go to main page</a><br />
     '''
-            output +="<a href='/taskeditform?id="+str(id)+"'>繼續編輯</a><br />"
-            
+            output +="<a href='/taskeditform?id="+str(database.last_insert_id)+"'>繼續編輯</a><br />"
+        db.close()
         return output
     #@+node:2014fall.20140821113240.3131: *3* taskdeleteform
     @cherrypy.expose
     def taskdeleteform(self, id=None, *args, **kwargs):
-        if ormdb == "sqlite":
-            # 為了避免跨執行緒使用 SQLite3, 重新 connect 資料庫
-            Database.connect()
         user = self.printuser()
         password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
         if read_only == "yes" and user != "admin":
@@ -828,20 +814,19 @@ class Pygroup(object):
                 # 這裡要區分刪除子緒或主緒資料
                 # 若刪除子緒, 則 data 只包含子緒資料, 若為主緒, 則 data 必須包含所有資料
                 # 先找出資料, 判定是否為主緒
-                query = Task.at(int(id)).select()
-                result = query.execute()
-                data = result.one()
+                # 用 get() 取單筆資料
+                db.connect()
+                data= Task.select().where(Task.id==int(id)).get()
                 owner = data.owner
                 if user != data.owner:
                     if user != "admin":
+                        db.close()
                         return output + "error! 非資料擁有者, Not authorized!"
                     else:
                         if data.follow == 0:
                             # 表示該資料為主緒資料
                             # 資料要重新搜尋, 納入子資料
-                            query = Task.where((Task.id == id) | (Task.follow == id)).select()
-                            result = query.execute()
-                            data = result.all()
+                            data = Task.select().where((Task.id == id) | (Task.follow == id))
                             output = "資料為主緒資料<br />"
                             # 增加一個資料類型判斷, main 表資料為主緒
                             type = "main"
@@ -855,14 +840,13 @@ class Pygroup(object):
                         template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
                         mytemplate = template_lookup.get_template("taskdeleteform.html")
                         # 這裡的 type 為所要刪除資料的類型, 為 main 或為 alone
+                        db.close()
                         return mytemplate.render(user=user, id=id, data=data, type=type)
                 else:
                     if data.follow == 0:
                         # 表示該資料為主緒資料
                         # 資料要重新搜尋, 納入子資料
-                        query = Task.where((Task.id == id) | (Task.follow == id)).select()
-                        result = query.execute()
-                        data = result.all()
+                        data = Task.select().where((Task.id == id) | (Task.follow == id))
                         output = "資料為主緒資料<br />"
                         # 增加一個資料類型判斷, main 表資料為主緒
                         type = "main"
@@ -876,15 +860,14 @@ class Pygroup(object):
                     template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
                     mytemplate = template_lookup.get_template("taskdeleteform.html")
                     # 這裡的 type 為所要刪除資料的類型, 為 main 或為 alone
+                    db.close()
                     return mytemplate.render(user=user, id=id, data=data, type=type)
             except:
+                db.close()
                 return "error! 無法正確查詢資料, Not authorized!"
     #@+node:2014fall.20140821113240.3132: *3* taskdelete
     @cherrypy.expose
     def taskdelete(self, id=None, type=None, name=None, content=None, *args, **kwargs):
-        if ormdb == "sqlite":
-            # 為了避免跨執行緒使用 SQLite3, 重新 connect 資料庫
-            Database.connect()
         # check user and data owner
         user = self.printuser()
         password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
@@ -892,13 +875,14 @@ class Pygroup(object):
             return "<a href='/'>Go to main page</a><br /><br />error, site is read only!"
         if user == "anonymous" and anonymous != "yes":
             raise cherrypy.HTTPRedirect("login")
-        query = Task.at(int(id)).select()
-        result = query.execute()
-        data = result.one()
-        now = strftime("%Y-%m-%d %H:%M:%S", localtime())
+        # 用 get() 取單筆資料
+        db.connect()
+        data = Task.select().where(Task.id==int(id)).get()
+        now = datetime.datetime.now(pytz.timezone('Asia/Taipei')).strftime('%Y-%m-%d %H:%M:%S')
         output = "user:"+user+", owner:"+data.owner+"<br /><br />"
         if user != data.owner:
             if user != "admin":
+                db.close()
                 return "error! Not authorized!"
             else:
                 # 若資料為主緒則一併刪除子緒, 若為子緒, 則只刪除該子緒
@@ -908,12 +892,12 @@ class Pygroup(object):
                     query = Task.at(int(id)).delete()
                     query.execute()
                     # 再刪除所有對應子緒
-                    query = Task.where(follow=int(id)).delete()
+                    query = Task.delete().where(follow=int(id))
                     query.execute()
                     output += "所有序列資料已經刪除!<br />"
                 else:
                     # 表示資料為子緒
-                    query = Task.at(int(id)).delete()
+                    query = Task.delete().where(Task.id==int(id))
                     query.execute()
                     output += "資料已經刪除!<br />"
         else:
@@ -921,21 +905,22 @@ class Pygroup(object):
             if data.follow == 0:
                 # 表示資料為主緒
                 # 先刪除主緒
-                query = Task.at(int(id)).delete()
+                query = Task.delete().where(Task.id==int(id))
                 query.execute()
                 # 再刪除所有對應子緒
-                query = Task.where(follow=int(id)).delete()
+                query = Task.delete().where(Task.follow==int(id))
                 query.execute()
                 output += '''所有序列資料已經刪除!<br /><br />
                 <a href='/'>Go to main page</a><br />
     '''
             else:
                 # 表示資料為子緒
-                query = Task.at(int(id)).delete()
+                query = Task.delete().where(Task.id==int(id))
                 query.execute()
                 output += '''資料已經刪除!<br /><br />
                 <a href='/'>Go to main page</a><br />
     '''
+        db.close()
         return output
     #@+node:2014fall.20140821113240.3133: *3* tasksearchform
     # 不允許使用者直接呼叫 tasksearchform
