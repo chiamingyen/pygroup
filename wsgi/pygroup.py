@@ -144,7 +144,7 @@ class Pygroup(object):
     # if there is no utf-8 encoding, no Chinese input available
     'tools.encode.encoding': 'utf-8',
     'tools.sessions.on' : True,
-    'tools.sessions.storage_type' : 'ram',
+    'tools.sessions.storage_type' : 'file',
     #'tools.sessions.locking' : 'explicit',
     'tools.sessions.locking' : 'early',
     'tools.sessions.storage_path' : data_dir+'/tmp',
