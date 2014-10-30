@@ -227,7 +227,6 @@ class Pygroup(object):
                 file.close()
             except:
                 print("mkdir error")
-
         if ormdb == "sqlite":
             # 資料庫使用 SQLite
             # 這裡應該要使用 peewee 建立資料庫與表格
@@ -269,7 +268,7 @@ class Pygroup(object):
                 conn = pymysql.connect(host=host, port=port, user=user, passwd=passwd, charset=charset)
                 # 建立資料庫
                 cur = conn.cursor()
-                cur.execute("CREATE DATABASE IF NOT EXISTS "+db+";")
+                cur.execute("CREATE DATABASE IF NOT EXISTS "+db+" CHARACTER SET UTF8;")
                 # 建立資料表
                 cur.execute("USE "+db+";")
                 cur.execute("CREATE TABLE IF NOT EXISTS `task` ( \
@@ -327,7 +326,6 @@ class Pygroup(object):
                 conn.close()
             except:
                 print("can not create db and table")
-      
     #@+node:2014fall.20140821113240.3111: *3* usermenu
     @cherrypy.expose
     def usermenu(self):
