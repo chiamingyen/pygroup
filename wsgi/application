@@ -1,11 +1,5 @@
-#@+leo-ver=5-thin
-#@+node:2014fall.20140821113240.3137: * @file application
 ########################### 1. 導入啟動 cherrypy, 所在目錄, 物件所需模組
-#@@language python
-#@@tabwidth -4
 
-#@+<<declarations>>
-#@+node:2014fall.20140821113240.3138: ** <<declarations>>
 import cherrypy
 import os
 import cmsimply
@@ -95,8 +89,10 @@ else:
                         'log.access_file': data_dir+'/downloads/access.log',
                         'log.error_file': data_dir+'/downloads/error.log'})
     '''
+    # 避開 winreg 模組無法找到的問題"
+    # Ubuntu 14.04, Python 3.4.0, CherryPy 3.5.0
+    cherrypy.config.update({'engine.autoreload_on':False})
+    # 若在近端以 Python 直接執行, 則使用下一行啟動
     cherrypy.quickstart(root, config = application_conf)
-#@-<<declarations>>
-#@+others
-#@-others
-#@-leo
+    # 若在近端使用 uwsgi 啟動則與 OpenShift 平台上的啟動方式相同
+    #application = cherrypy.Application(root, config = application_conf)

@@ -1,5 +1,3 @@
-#@+leo-ver=5-thin
-#@+node:2014fall.20140826101705.2629: * @file cmsimply.py
 #
 # -*- coding: utf-8 -*-
 '''
@@ -21,11 +19,7 @@ along with CMSimply. If not, see <http://www.gnu.org/licenses/>.
 ***********************************************************************
 '''
 
-#@@language python
-#@@tabwidth -4
 
-#@+<<declarations>>
-#@+node:2014fall.20140826101705.2630: ** <<declarations>> (application)
 import cherrypy
 import re
 import os
@@ -58,9 +52,6 @@ else:
     data_dir = _curdir + "/local_data/"
 
 
-#@-<<declarations>>
-#@+others
-#@+node:2014fall.20140826101705.2631: ** downloadlist_access_list
 def downloadlist_access_list(files, starti, endi):
     # different extension files, associated links were provided
     # popup window to view images, video or STL files, other files can be downloaded directly
@@ -81,14 +72,13 @@ def downloadlist_access_list(files, starti, endi):
             files[index]+'\',\'images\', \'catalogmode\',\'scrollbars\')">'+files[index]+'</a> ('+str(fileSize)+')<br />'
         # flv files
         elif fileExtension == ".flv":
-            outstring += '<input type="checkbox" name="filename" value="'+files[index]+'"><a href="javascript:;" onClick="window.open(\'/flvplayer?filepath=/downloads/'+ \
+            outstring += '<input type="checkbox" name="filename" value="'+files[index]+'"><a href="javascript:;" onClick="window.open(\'/c/flvplayer?filepath=/downloads/'+ \
             files[index]+'\',\'images\', \'catalogmode\',\'scrollbars\')">'+files[index]+'</a> ('+str(fileSize)+')<br />'
         # direct download files
         else:
             outstring += "<input type='checkbox' name='filename' value='"+files[index]+"'><a href='download/?filepath="+download_root_dir.replace('\\', '/')+ \
             "downloads/"+files[index]+"'>"+files[index]+"</a> ("+str(fileSize)+")<br />"
     return outstring
-#@+node:2014fall.20140826101705.2632: ** imagelist_access_list
 def imagelist_access_list(files, starti, endi):
     # different extension files, associated links were provided
     # popup window to view images, video or STL files, other files can be downloaded directly
@@ -105,14 +95,12 @@ def imagelist_access_list(files, starti, endi):
             files[index]+'\',\'images\', \'catalogmode\',\'scrollbars\')">'+files[index]+'</a> ('+str(fileSize)+')<br />'
 
     return outstring
-#@+node:2014fall.20140826101705.2633: ** sizeof_fmt
 def sizeof_fmt(num):
     for x in ['bytes','KB','MB','GB']:
         if num < 1024.0:
             return "%3.1f%s" % (num, x)
         num /= 1024.0
     return "%3.1f%s" % (num, 'TB')
-#@+node:2014fall.20140826101705.2634: ** set_admin_css
 # set_admin_css for administrator
 def set_admin_css():
     outstring = '''<!doctype html><html><head>
@@ -159,7 +147,6 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 </confmenu></header>
 '''
     return outstring
-#@+node:2014fall.20140826101705.2635: ** set_footer
 def set_footer():
     # Extra consideration for cherrypy.url(qs=cherrypy.request.query_string) return no data
     return "<footer> \
@@ -171,12 +158,10 @@ def set_footer():
         <br />Powered by <a href='http://cmsimple.cycu.org'>CMSimply</a> \
         </footer> \
         </body></html>"
-#@+node:2014fall.20140826101705.2636: ** file_get_contents
 def file_get_contents(filename):
     # open file in utf-8 and return file content
     with open(filename, encoding="utf-8") as file:
         return file.read()
-#@+node:2014fall.20140826101705.2637: ** search_content
 # use head title to search page content
 '''
 # search_content(head, page, search)
@@ -214,7 +199,6 @@ def search_content(head, page, search):
         # 從 page[次序] 印出頁面內容
     # 準備傳回 page_order 與 page_content 等兩個數列
     return page_order, page_content
-#@+node:2014fall.20140826101705.2638: ** parse_content
 def parse_content():
     # if no content.htm, generate a head 1 and content 1 file
     if not os.path.isfile(data_dir+"content.htm"):
@@ -259,7 +243,6 @@ def parse_content():
     # send head to unique function to avoid duplicate heading
     #head_list = unique(head_list)
     return head_list, level_list, page_list
-#@+node:2014fall.20140826101705.2639: ** render_menu
 def render_menu(head, level, page, sitemap=0):
     directory = ""
     current_level = level[0]
@@ -292,7 +275,6 @@ def render_menu(head, level, page, sitemap=0):
         current_level = level[index]
     directory += "</li></ul>"
     return directory
-#@+node:2014fall.20140826101705.2640: ** filebrowser
 def filebrowser():
     return '''
 <script type="text/javascript">
@@ -329,7 +311,6 @@ tinyMCE.activeEditor.windowManager.open(
 return false;
 }
 '''
-#@+node:2014fall.20140826101705.2641: ** syntaxhighlight
 def syntaxhighlight():
     return '''
 <script type="text/javascript" src="/static/syntaxhighlighter/shCore.js"></script>
@@ -344,13 +325,11 @@ def syntaxhighlight():
 <link type="text/css" rel="stylesheet" href="/static/syntaxhighlighter/css/shCoreDefault.css"/>
 <script type="text/javascript">SyntaxHighlighter.all();</script>
 '''
-#@+node:2014fall.20140826101705.2642: ** editorhead
 def editorhead():
     return '''
 <script language="javascript" type="text/javascript" src="/static/tinymce3/tiny_mce/tiny_mce.js"></script>
 <script type="text/javascript" src="/static/tinymce3/init.js"></script>
 '''
-#@+node:2014fall.20140826101705.2643: ** tinymceinit
 def tinymceinit():
     return '''
 <script language="javascript" type="text/javascript">
@@ -405,10 +384,8 @@ theme_advanced_buttons4 : ""
 }
 </script>
 '''
-#@+node:2014fall.20140826101705.2644: ** editorfoot
 def editorfoot():
     return '''<body id="body"  onload="tinyMCE_initialize0();">'''
-#@+node:2014fall.20140826101705.2645: ** tinymce_editor
 def tinymce_editor(menu_input=None, editor_content=None, page_order=None):
     files = os.listdir(download_root_dir+"downloads/")
     link_list = ""
@@ -447,7 +424,6 @@ var myLinkList = new Array('''+link_list+''');
         outstring += '''<input type=button onClick="location.href='get_page?heading='''+head[page_order]+ \
             ''''" value='viewpage'></form></section></body></html>'''
     return outstring
-#@+node:2014fall.20140826101705.2646: ** parse_config
 def parse_config():
     if not os.path.isfile(data_dir+"config"):
         # create config file if there is no config file
@@ -462,7 +438,6 @@ def parse_config():
     site_title = config_data[0].split(":")[1]
     password = config_data[1].split(":")[1]
     return site_title, password
-#@+node:2014fall.20140826101705.2647: ** file_selector_script
 def file_selector_script():
     return '''
 <script type="text/javascript" src="/static/tinymce3/tiny_mce/tiny_mce_popup.js"></script>
@@ -497,7 +472,6 @@ function setLink(link){
 }
 </script>
 '''
-#@+node:2014fall.20140826101705.2648: ** file_lister
 def file_lister(directory, type=None, page=1, item_per_page=10):
     files = os.listdir(download_root_dir+directory)
     total_rows = len(files)
@@ -584,7 +558,6 @@ def file_lister(directory, type=None, page=1, item_per_page=10):
         return outstring+"<br /><br /><a href='fileuploadform'>file upload</a>"
     else:
         return outstring+"<br /><br /><a href='imageuploadform'>image upload</a>"
-#@+node:2014fall.20140826101705.2649: ** downloadselect_access_list
 def downloadselect_access_list(files, starti, endi):
     outstring = ""
     for index in range(int(starti)-1, int(endi)):
@@ -594,7 +567,6 @@ def downloadselect_access_list(files, starti, endi):
         download_root_dir.replace('\\', '/')+'''/downloads/'''+files[index]+'''",0); return false;'>'''+ \
         files[index]+'''</a> ('''+str(sizeof_fmt(fileSize))+''')<br />'''
     return outstring
-#@+node:2014fall.20140826101705.2650: ** loadlist_access_list
 def loadlist_access_list(files, starti, endi, filedir):
     # different extension files, associated links were provided
     # popup window to view images, video or STL files, other files can be downloaded directly
@@ -615,7 +587,7 @@ def loadlist_access_list(files, starti, endi, filedir):
             files[index]+'\',\'images\', \'catalogmode\',\'scrollbars\')">'+files[index]+'</a> ('+str(fileSize)+')<br />'
         # flv files
         elif fileExtension == ".flv":
-            outstring += '<input type="checkbox" name="filename" value="'+files[index]+'"><a href="javascript:;" onClick="window.open(\'/flvplayer?filepath=/downloads/'+ \
+            outstring += '<input type="checkbox" name="filename" value="'+files[index]+'"><a href="javascript:;" onClick="window.open(\'/c/flvplayer?filepath=/downloads/'+ \
             files[index]+'\',\'images\', \'catalogmode\',\'scrollbars\')">'+files[index]+'</a> ('+str(fileSize)+')<br />'
         # py files
         elif fileExtension == ".py":
@@ -624,7 +596,6 @@ def loadlist_access_list(files, starti, endi, filedir):
         else:
             outstring += "<input type='checkbox' name='filename' value='"+files[index]+"'><a href='/"+filedir+"_programs/"+files[index]+"'>"+files[index]+"</a> ("+str(fileSize)+")<br />"
     return outstring
-#@+node:2014fall.20140826101705.2651: ** imageselect_access_list
 def imageselect_access_list(files, starti, endi):
     outstring = '''<head>
 <style>
@@ -656,14 +627,12 @@ a.xhfbfile:hover{
         <img src="download/?filepath='''+ \
         download_root_dir.replace('\\', '/')+'''/images/'''+files[index]+'''" width="150px"/></span></a> ('''+str(sizeof_fmt(fileSize))+''')<br />'''
     return outstring
-#@+node:2014fall.20140826101705.2652: ** sizeof_fmt
 def sizeof_fmt(num):
     for x in ['bytes','kb','mb','gb']:
         if num < 1024.0:
             return "%3.1f %s" % (num, x)
         num /= 1024.0
     return "%3.1f %s" % (num, 'tb')
-#@+node:2014fall.20140826101705.2653: ** unique
 def unique(items):
     found = set([])
     keep = []
@@ -677,14 +646,13 @@ def unique(items):
             count[item] += 1
             keep.append(str(item)+"_"+str(count[item]))
     return keep
-#@+node:2014fall.20140826101705.2654: ** class CMSimply
 class CMSimply(object):
     _cp_config = {
     # if there is no utf-8 encoding, no Chinese input available
     'tools.encode.encoding': 'utf-8',
     'tools.sessions.on' : True,
     # storage_type could be 'ram', 'file', 'cookie' or 'custom'
-    'tools.sessions.storage_type' : 'ram',
+    'tools.sessions.storage_type' : 'file',
     #'tools.sessions.locking' : 'explicit',
     'tools.sessions.locking' : 'early',
     'tools.sessions.storage_path' : data_dir+'/tmp',
@@ -694,8 +662,6 @@ class CMSimply(object):
     'tools.sessions.clean_freq': 30
     }
     
-    #@+others
-    #@+node:2014fall.20140826101705.2655: *3* __init__
     def __init__(self):
         # hope to create downloads and images directories　
         if not os.path.isdir(download_root_dir+"downloads"):
@@ -724,7 +690,6 @@ class CMSimply(object):
             except:
                 print("mkdir error")
 
-    #@+node:2014fall.20140826101705.2656: *3* index
     @cherrypy.expose
     def index(self, heading=None, *args, **kwargs):
         head, level, page = parse_content()
@@ -755,20 +720,17 @@ class CMSimply(object):
             directory+"</nav><section>"+return_content+"</section></div></body></html>"
 
 
-    #@+node:2014fall.20140826101705.2657: *3* default
     # default method, if there is no corresponding method, cherrypy will redirect to default method
     # need *args and **kwargs as input variables for all possible URL links
     @cherrypy.expose
     def default(self, attr='default', *args, **kwargs):
         raise cherrypy.HTTPRedirect("/")
-    #@+node:2014fall.20140826101705.2658: *3* error_log
     @cherrypy.expose
     def error_log(self, info="Error"):
         head, level, page = parse_content()
         directory = render_menu(head, level, page)
         return self.set_css()+"<div class='container'><nav>"+ \
         directory+"</nav><section><h1>ERROR</h1>"+info+"</section></div></body></html>"
-    #@+node:2014fall.20140826101705.2659: *3* login
     @cherrypy.expose
     def login(self):
         head, level, page = parse_content()
@@ -781,12 +743,10 @@ class CMSimply(object):
         </section></div></body></html>"
         else:
             raise cherrypy.HTTPRedirect("edit_page")
-    #@+node:2014fall.20140826101705.2660: *3* logout
     @cherrypy.expose
     def logout(self):
         cherrypy.session.delete()
         raise cherrypy.HTTPRedirect("/")
-    #@+node:2014fall.20140826101705.2661: *3* checkLogin
     @cherrypy.expose
     def checkLogin(self, password=None):
         site_title, saved_password = parse_config()
@@ -795,7 +755,6 @@ class CMSimply(object):
             cherrypy.session['admin'] = 1
             raise cherrypy.HTTPRedirect("edit_page")
         raise cherrypy.HTTPRedirect("/")
-    #@+node:2014fall.20140826101705.2662: *3* get_page
     # seperate page need heading and edit variables, if edit=1, system will enter edit mode
     # single page edit will use ssavePage to save content, it means seperate save page
     @cherrypy.expose
@@ -880,13 +839,11 @@ class CMSimply(object):
                 #pagedata = "<h"+level[page_order]+">"+heading+"</h"+level[page_order]+">"+search_content(head, page, heading)
                 #outstring = last_page+" "+next_page+"<br />"+ tinymce_editor(directory, cgi.escape(pagedata), page_order)
                     return outstring
-    #@+node:2014fall.20140826101705.2663: *3* isAdmin
     def isAdmin(self):
         if cherrypy.session.get('admin') == 1:
                 return True
         else:
             return False
-    #@+node:2014fall.20140826101705.2664: *3* edit_page
     # edit all page content
     @cherrypy.expose
     def edit_page(self):
@@ -899,7 +856,6 @@ class CMSimply(object):
             pagedata =file_get_contents(data_dir+"content.htm")
             outstring = tinymce_editor(directory, cgi.escape(pagedata))
             return outstring
-    #@+node:2014fall.20140826101705.2665: *3* savePage
     @cherrypy.expose
     def savePage(self, page_content=None):
         # check if administrator
@@ -922,7 +878,6 @@ class CMSimply(object):
         file.close()
         '''
         raise cherrypy.HTTPRedirect("edit_page")
-    #@+node:2014fall.20140826101705.2666: *3* ssavePage
     # seperate save page
     @cherrypy.expose
     def ssavePage(self, page_content=None, page_order=None):
@@ -952,7 +907,6 @@ class CMSimply(object):
             raise cherrypy.HTTPRedirect(edit_url)
         else:
             raise cherrypy.HTTPRedirect("/")
-    #@+node:2014fall.20140826101705.2667: *3* save_program
     @cherrypy.expose
     def save_program(self, filename=None, editor=None, overwrite=0, delete1=0, delete2=0):
         if not self.isAdmin():
@@ -968,7 +922,6 @@ class CMSimply(object):
             else:  
                 return str(filename)+" exists! editor content not saved yet!<br />"
 
-    #@+node:2014fall.20140826101705.2668: *3* save_calcprogram
     @cherrypy.expose
     def save_calcprogram(self, filename=None, sheet_content=None, overwrite=0, delete1=0, delete2=0):
         if not self.isAdmin():
@@ -990,7 +943,6 @@ class CMSimply(object):
 
 
 
-    #@+node:2014fall.20140826101705.2669: *3* delete_program
     @cherrypy.expose
     def delete_program(self, filename=None, editor=None, overwrite=0, delete1=0, delete2=0):
         if not self.isAdmin():
@@ -1004,7 +956,6 @@ class CMSimply(object):
             else:
                 return "can not delete "+str(filename)+"!"
                 
-    #@+node:2014fall.20140826101705.2670: *3* delete_calcprogram
     @cherrypy.expose
     def delete_calcprogram(self, filename=None, sheet_content=None, overwrite=0, delete1=0, delete2=0):
         if not self.isAdmin():
@@ -1018,7 +969,6 @@ class CMSimply(object):
             else:
                 return "can not delete "+str(filename)+"!"
                 
-    #@+node:2014fall.20140826101705.2671: *3* fileuploadform
     @cherrypy.expose
     def fileuploadform(self):
         if self.isAdmin():
@@ -1049,7 +999,6 @@ remotePath:function(){
 '''
         else:
             raise cherrypy.HTTPRedirect("login")
-    #@+node:2014fall.20140826101705.2672: *3* fileaxupload
     @cherrypy.expose
     def fileaxupload(self, *args, **kwargs):
         # need to consider if the uploaded filename already existed.
@@ -1066,7 +1015,6 @@ remotePath:function(){
             return "files uploaded!"
         else:
             raise cherrypy.HTTPRedirect("login")
-    #@+node:2014fall.20140826101705.2673: *3* flvplayer
     @cherrypy.expose
     def flvplayer(self, filepath=None):
         outstring = '''
@@ -1079,7 +1027,6 @@ remotePath:function(){
     </object>
     '''
         return outstring
-    #@+node:2014fall.20140826101705.2674: *3* imageuploadform
     @cherrypy.expose
     def imageuploadform(self):
         if self.isAdmin():
@@ -1109,7 +1056,6 @@ remotePath:function(){
 '''
         else:
             raise cherrypy.HTTPRedirect("login")
-    #@+node:2014fall.20140826101705.2675: *3* imageaxupload
     @cherrypy.expose
     def imageaxupload(self, *args, **kwargs):
         if self.isAdmin():
@@ -1124,7 +1070,6 @@ remotePath:function(){
             return "image files uploaded!"
         else:
             raise cherrypy.HTTPRedirect("login")
-    #@+node:2014fall.20140826101705.2676: *3* file_selector
     @cherrypy.expose
     def file_selector(self, type=None, page=1, item_per_page=10, keyword=None):
         if not self.isAdmin():
@@ -1136,7 +1081,6 @@ remotePath:function(){
             elif type == "image":
                 #return images_file_selector()
                 return file_lister("images", type, page, item_per_page)
-    #@+node:2014fall.20140826101705.2677: *3* download_list
     @cherrypy.expose
     def download_list(self, item_per_page=5, page=1, keyword=None, *args, **kwargs):
         if not self.isAdmin():
@@ -1224,7 +1168,6 @@ remotePath:function(){
 
         return self.set_css()+"<div class='container'><nav>"+ \
             directory+"</nav><section><h1>Download List</h1>"+outstring+"<br/><br /></body></html>"
-    #@+node:2014fall.20140826101705.2678: *3* image_list
     @cherrypy.expose
     def image_list(self, item_per_page=5, page=1, keyword=None, *args, **kwargs):
         if not self.isAdmin():
@@ -1312,7 +1255,6 @@ remotePath:function(){
 
         return self.set_css()+"<div class='container'><nav>"+ \
             directory+"</nav><section><h1>Image List</h1>"+outstring+"<br/><br /></body></html>"
-    #@+node:2014fall.20140826101705.2679: *3* load_list
     @cherrypy.expose
     def load_list(self, item_per_page=5, page=1, filedir=None, keyword=None, *args, **kwargs):
         '''
@@ -1423,7 +1365,6 @@ remotePath:function(){
         outstring += "<br /><br /></form>"
 
         return outstring
-    #@+node:2014fall.20140826101705.2680: *3* delete_file
     @cherrypy.expose
     def delete_file(self, filename=None):
         if not self.isAdmin():
@@ -1447,7 +1388,6 @@ remotePath:function(){
 
         return self.set_css()+"<div class='container'><nav>"+ \
             directory+"</nav><section><h1>Download List</h1>"+outstring+"<br/><br /></body></html>"
-    #@+node:2014fall.20140826101705.2681: *3* image_delete_file
     @cherrypy.expose
     def image_delete_file(self, filename=None):
         if not self.isAdmin():
@@ -1471,7 +1411,6 @@ remotePath:function(){
 
         return self.set_css()+"<div class='container'><nav>"+ \
             directory+"</nav><section><h1>Download List</h1>"+outstring+"<br/><br /></body></html>"
-    #@+node:2014fall.20140826101705.2682: *3* doDelete
     @cherrypy.expose
     def doDelete(self, filename=None):
         if not self.isAdmin():
@@ -1499,7 +1438,6 @@ remotePath:function(){
 
         return self.set_css()+"<div class='container'><nav>"+ \
             directory+"</nav><section><h1>Download List</h1>"+outstring+"<br/><br /></body></html>"
-    #@+node:2014fall.20140826101705.2683: *3* image_doDelete
     @cherrypy.expose
     def image_doDelete(self, filename=None):
         if not self.isAdmin():
@@ -1527,7 +1465,6 @@ remotePath:function(){
 
         return self.set_css()+"<div class='container'><nav>"+ \
             directory+"</nav><section><h1>Image List</h1>"+outstring+"<br/><br /></body></html>"
-    #@+node:2014fall.20140826101705.2684: *3* creo_getvolume
     @cherrypy.expose
     def creo_getvolume(self, *args, **kwargs):
         return '''
@@ -1553,7 +1490,6 @@ remotePath:function(){
        }
 </script>
 '''
-    #@+node:2014fall.20140826101705.2685: *3* anglebracket
     @cherrypy.expose
     def anglebracket(self, *args, **kwargs):
         return '''
@@ -1613,7 +1549,6 @@ if (!newfile.Status) {
         }
 </script>
 '''
-    #@+node:2014fall.20140826101705.2686: *3* search_form
     @cherrypy.expose
     def search_form(self):
         if self.isAdmin():
@@ -1626,7 +1561,6 @@ if (!newfile.Status) {
         </section></div></body></html>"
         else:
             raise cherrypy.HTTPRedirect("login")
-    #@+node:2014fall.20140826101705.2687: *3* doSearch
     @cherrypy.expose
     def doSearch(self, keyword=None):
         if not self.isAdmin():
@@ -1644,7 +1578,6 @@ if (!newfile.Status) {
             keyword.lower()+"<br /><br />in the following pages:<br /><br />"+ \
             match+" \
          </section></div></body></html>"
-    #@+node:2014fall.20140826101705.2688: *3* set_css
     def set_css(self):
         outstring = '''<!doctype html><html><head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8">
@@ -1696,7 +1629,6 @@ if (!newfile.Status) {
     </confmenu></header>
     '''
         return outstring
-    #@+node:2014fall.20140826101705.2689: *3* edit_config
     @cherrypy.expose
     def edit_config(self):
         head, level, page = parse_content()
@@ -1717,7 +1649,6 @@ if (!newfile.Status) {
      <input type='hidden' name='password2' value='"+password+"'> \
         <input type='submit' value='send'></form> \
         </section></div></body></html>"
-    #@+node:2014fall.20140826101705.2690: *3* saveConfig
     @cherrypy.expose
     def saveConfig(self, site_title=None, password=None, password2=None):
         if not self.isAdmin():
@@ -1740,12 +1671,10 @@ if (!newfile.Status) {
             file.close()
             return self.set_css()+"<div class='container'><nav>"+ \
             directory+"</nav><section><h1>config file saved</h1><a href='/'>Home</a></body></html>"
-    #@+node:2014fall.20140826101705.2691: *3* listdir
     # use to check directory variable data
     @cherrypy.expose
     def listdir(self):
         return download_root_dir +","+data_dir
-    #@+node:2014fall.20140826101705.2692: *3* sitemap
     @cherrypy.expose
     def sitemap(self):
         head, level, page = parse_content()
@@ -1754,7 +1683,6 @@ if (!newfile.Status) {
 
         return self.set_css()+"<div class='container'><nav>"+ \
         directory+"</nav><section><h1>Site Map</h1>"+sitemap+"</section></div></body></html>"
-    #@+node:2014fall.20140826101705.2693: *3* brython
     @cherrypy.expose
     def brython(self, item_per_page=5, page=1, keyword=None, filename=None, *args, **kwargs):
         part1 =  '''
@@ -2049,7 +1977,6 @@ if (!newfile.Status) {
             return part1+part2+load_program+part3+self.load_list(item_per_page, page, "brython", keyword)+part4+part5
         else:
             return part1+adm1+part2+adm2+load_program+part3+self.load_list(item_per_page, page, "brython", keyword)+part4+adm3+part5
-    #@+node:2014fall.20140826101705.2694: *3* ethercalc
     @cherrypy.expose
     def ethercalc(self, filename=None, *args, **kwargs):
         part1 = '''
@@ -2241,7 +2168,6 @@ if (!newfile.Status) {
     '''
         return part1+load_program+part2
 
-    #@+node:2014fall.20140826101705.2695: *3* calc
     @cherrypy.expose
     def calc(self, item_per_page=5, page=1, keyword=None, filename=None, *args, **kwargs):
         part1 = '''
@@ -2472,7 +2398,6 @@ if (!newfile.Status) {
             # for admin
             return part1+adm1+load_program+part2+adm2+self.load_list(item_per_page, page, "calc")+part3
 
-    #@+node:2014fall.20140826101705.2696: *3* openjscad
     @cherrypy.expose
     def openjscad(self, *args, **kwargs):
         return '''
@@ -2692,7 +2617,6 @@ if (!newfile.Status) {
     </script>
     </body></html> 
     '''
-    #@+node:2014fall.20140826101705.2697: *3* ucrobot
     @cherrypy.expose
     def ucrobot(self):
         return '''
@@ -2715,16 +2639,10 @@ if (!newfile.Status) {
 
     </body></html>
     '''
-    #@-others
-#@+node:2014fall.20140826101705.2698: ** class Download
 class Download:
-    #@+others
-    #@+node:2014fall.20140826101705.2699: *3* index
     @cherrypy.expose
     def index(self, filepath):
         return serve_file(filepath, "application/x-download", "attachment")
-    #@-others
-#@-others
 root = CMSimply()
 root.download = Download()
 
@@ -2758,4 +2676,3 @@ if __name__ == '__main__':
     else:
         # operate in localhost
         cherrypy.quickstart(root, config = application_conf)
-#@-leo

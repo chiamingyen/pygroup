@@ -1,14 +1,8 @@
-#@+leo-ver=5-thin
-#@+node:2015.20140902161836.3801: * @file webster.py
 #coding: utf-8
 
 
 
-#@@language python
-#@@tabwidth -4
 
-#@+<<declarations>>
-#@+node:2015.20140902161836.3802: ** <<declarations>> (webster)
 import os
 import sys
 import cherrypy
@@ -32,22 +26,16 @@ else:
     # 表示程式在近端執行
     download_root_dir = _curdir + "/local_data/"
     data_dir = _curdir + "/local_data/"
-#@-<<declarations>>
-#@+others
-#@+node:2015.20140902161836.3803: ** class MyCheck
 class MyCheck(object):
     _cp_config = {
         'tools.sessions.on': True
     }
 
-    #@+others
-    #@+node:2015.20140902161836.3804: *3* nl2br
     def nl2br(self, string, is_xhtml= True ):
         if is_xhtml:
             return string.replace('\n','<br />\n')
         else :
             return string.replace('\n','<br>\n')
-    #@+node:2015.20140902161836.3805: *3* doCheck
     def doCheck(self, word=None):
         if word == None:
             return "<br /><a href=\"/\">首頁</a>|<a href=\"./\">重新查詢</a>"
@@ -62,7 +50,6 @@ class MyCheck(object):
                 output += word.title()+"<br /><br />"+str(self.nl2br(item.defn,True))+"<br />"
             output += "<br /><a href=\"/\">首頁</a>|<a href=\"./\">重新查詢</a>"
             return output
-    #@+node:2015.20140902161836.3806: *3* index
     doCheck.exposed = True
 
     def index(self):
@@ -80,9 +67,7 @@ class MyCheck(object):
     <br /><a href="/">首頁</a>
     </body>
     </html>'''	
-    #@-others
     index.exposed = True
-#@-others
 if __name__ == '__main__':
     '''
     # 指定程式執行的連接埠號, 內定為 8080
@@ -96,4 +81,3 @@ if __name__ == '__main__':
         application = cherrypy.Application(MyCheck())
     else:
         cherrypy.quickstart(MyCheck())
-#@-leo

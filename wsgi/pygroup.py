@@ -1,5 +1,3 @@
-#@+leo-ver=5-thin
-#@+node:2014fall.20140821113240.3105: * @file pygroup.py
 # -*- coding: utf-8 -*-
 '''
 Copyright © 2014 Chiaming Yen
@@ -20,11 +18,7 @@ along with Pygroup. If not, see <http://www.gnu.org/licenses/>.
 ***********************************************************************
 '''
 ########################### 1. 導入所需模組
-#@@language python
-#@@tabwidth -4
 
-#@+<<declarations>>
-#@+node:2014fall.20140821113240.3106: ** <<declarations>> (pygroup)
 import cherrypy
 import os
 ### for logincheck
@@ -105,8 +99,8 @@ elif ormdb == "mysql":
             passwd=os.environ['OPENSHIFT_MYSQL_DB_PASSWORD'], charset='utf8')
     else:
         # peewee 版本
-        db = MySQLDatabase(database='cadp', host='localhost', \
-             port=3306, user='root', passwd='root', charset='utf8')
+        db = MySQLDatabase(database='yourdb', host='yourhost', \
+             port=3306, user='youruser', passwd='yourpassword', charset='utf8')
 else:
     # 選用 PostgreSQL
     # 注意 port 必須為整數, 而非字串
@@ -119,9 +113,6 @@ else:
         # peewee 版本
         db = PostgreSQLDatabase(database='cadp', host='localhost', \
              port=3306, user='root', passwd='root', charset='utf8')
-#@-<<declarations>>
-#@+others
-#@+node:2014fall.20140821113240.3107: ** class Task
 # 在此建立資料表欄位
     
 class Task(Model):
@@ -137,7 +128,6 @@ class Task(Model):
 
     class Meta:
         database = db # This model uses the data_dir+"task.db" database.
-#@+node:2014fall.20140821113240.3108: ** class Pygroup
 ########################### 3. 建立主物件
 class Pygroup(object):
     _cp_config = {
@@ -153,8 +143,6 @@ class Pygroup(object):
     'tools.caching.on' : False
     }
     
-    #@+others
-    #@+node:2014fall.20140821113240.3109: *3* __init__
     def __init__(self):
         # hope to create downloads and images directories　
         if not os.path.isdir(download_root_dir+"downloads"):
@@ -257,11 +245,11 @@ class Pygroup(object):
                 user=str(os.environ[str('OPENSHIFT_MYSQL_DB_USERNAME')])
                 passwd=str(os.environ[str('OPENSHIFT_MYSQL_DB_PASSWORD')])
             else:
-                host="localhost"
+                host="yourhost"
                 port=3306
-                db='cadp'
-                user='root'
-                passwd='root'
+                db='yourdb'
+                user='youruser'
+                passwd='yourpassword'
             charset='utf8'
             # 案例建立時, 就嘗試建立資料庫與資料表
             try:
@@ -326,7 +314,6 @@ class Pygroup(object):
                 conn.close()
             except:
                 print("can not create db and table")
-    #@+node:2014fall.20140821113240.3111: *3* usermenu
     @cherrypy.expose
     def usermenu(self):
         # 這裡包括列出用戶以及列印表單
@@ -337,7 +324,6 @@ class Pygroup(object):
         # 必須要從 templates 目錄取出 usermenu.html
         mytemplate = template_lookup.get_template("usermenu.html")
         return mytemplate.render(user=user, menu=menu)
-    #@+node:2014fall.20140821113240.3112: *3* printuser
     def printuser(self):
         # 取得 user 資料
         try:
@@ -347,7 +333,6 @@ class Pygroup(object):
         if user == "":
             user = "anonymous"
         return user
-    #@+node:2014fall.20140821113240.3113: *3* taskform
     # 不允許使用者直接呼叫 taskform
     def taskform(self, id=0, *args, **kwargs):
         user = self.printuser()
@@ -356,7 +341,6 @@ class Pygroup(object):
         # 針對 id != 0 時, 表示要回應主資料緒, 希望取出與 id 對應的資料標頭, 然後加上 Re:
         mytemplate = template_lookup.get_template("taskform.html")
         return mytemplate.render(user=user, id=id)
-    #@+node:2014fall.20140821113240.3114: *3* taskaction
     @cherrypy.expose
     def taskaction(self, type=None, name=None, follow=0, content=None, ip=None, *args, **kwargs):
         if content == None or name == "":
@@ -404,7 +388,6 @@ class Pygroup(object):
             return output
         # 原先直接轉到 tasklist 方法 (index)
         #raise cherrypy.HTTPRedirect("tasklist")
-    #@+node:2014fall.20140821113240.3115: *3* index (tasklist)
     @cherrypy.expose
     # 從 tasklist 改為 index
     def index(self, page=1, item_per_page=5, id=0, flat=0, desc=0, keyword=None, *args, **kwargs):
@@ -483,14 +466,12 @@ class Pygroup(object):
             adsense_content=adsense_content, adsense=adsense, anonymous=anonymous, \
             site_closed=site_closed, read_only=read_only)
         # 其餘分頁 logic 在 mako template tasklist.html 中完成
-    #@+node:2015.20140824143250.2080: *3* allow_pass
     def allow_pass(self, user="anonymous"):
         password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
         if user == "anonymous" and anonymous != "yes":
             return "no"
         else:
             return "yes"
-    #@+node:2015.20140830081045.4015: *3* strip_tags
     ## Remove xml style tags from an input string.
     #
     #  @param string The input string.
@@ -518,20 +499,17 @@ class Pygroup(object):
         string = re.sub(r'<[^>]*?>', '', string)
      
       return string
-    #@+node:2014fall.20140821113240.3117: *3* client_ip
     def client_ip(self):
         try:
             return cherrypy.request.headers["X-Forwarded-For"]
         except:
             return cherrypy.request.headers["Remote-Addr"]
-    #@+node:2014fall.20140821113240.3118: *3* default
     # default method, if there is no corresponding method, cherrypy will redirect to default method
     # need *args and **kwargs as input variables for all possible URL links
     @cherrypy.expose
     # default can not live with calc method?
     def default(self, attr='default', *args, **kwargs):
         raise cherrypy.HTTPRedirect("/")
-    #@+node:2014fall.20140821113240.3119: *3* save_program
     @cherrypy.expose
     def save_program(self, filename=None, sheet_content=None):
         with open(data_dir+"/calc_programs/"+filename, "wt", encoding="utf-8") as out_file:
@@ -539,19 +517,17 @@ class Pygroup(object):
             out_file.write(data)
 
         return str(filename)+" saved!<br />"
-    #@+node:2015.20140829105017.2096: *3* login
+    @cherrypy.expose
     @cherrypy.expose
     # 登入表單, 使用 gmail 帳號與密碼登入
     def login(self, id=0, *args, **kwargs):
         # 當使用者要求登入時, 將 user session 清除
-        cherrypy.session["user"] = ""
+        #cherrypy.session["user"] = ""
         saved_password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
         
         template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
         mytemplate = template_lookup.get_template("login.html")
         return mytemplate.render(site_closed=site_closed, read_only=read_only, id=id)
-
-    #@+node:2014fall.20140821113240.3127: *3* logincheck
     @cherrypy.expose
     def logincheck(self, id=0, account=None, password=None):
         saved_password, adsense, anonymous, mail_suffix, site_closed, read_only = self.parse_config(filename="pygroup_config")
@@ -589,7 +565,6 @@ class Pygroup(object):
         else:
             raise cherrypy.HTTPRedirect("login?id="+str(id))
         raise cherrypy.HTTPRedirect("/?id="+str(id))
-    #@+node:2015.20140825203447.2081: *3* editconfig
     @cherrypy.expose
     def editconfig(self, password=None, password2=None, adsense=None, anonymous=None, \
                     mail_suffix=None, site_closed=None, read_only=None):
@@ -622,7 +597,6 @@ class Pygroup(object):
             file.close()
             # 傳回設定檔案已經儲存
             return "config file saved<br /><a href='/'>Go to main page</a><br />"
-    #@+node:2015.20140825203447.2080: *3* editconfigform
     @cherrypy.expose
     def editconfigform(self, *args, **kwargs):
         user = self.printuser()
@@ -635,7 +609,6 @@ class Pygroup(object):
         template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
         mytemplate = template_lookup.get_template("editconfigform.html")
         return mytemplate.render(user=user, saved_password=saved_password, adsense=adsense, anonymous=anonymous, mail_suffix=mail_suffix, site_closed=site_closed, read_only=read_only)
-    #@+node:2015.20140826084958.2086: *3* editadsense
     @cherrypy.expose
     def editadsense(self, adsense_content=None):
         filename = "adsense_content"
@@ -650,7 +623,6 @@ class Pygroup(object):
         file.close()
         # 傳回設定檔案已經儲存
         return "adsense_content file saved"
-    #@+node:2015.20140826084958.2084: *3* editadsenseform
     @cherrypy.expose
     def editadsenseform(self, *args, **kwargs):
         user = self.printuser()
@@ -666,7 +638,6 @@ class Pygroup(object):
         template_lookup = TemplateLookup(directories=[template_root_dir+"/templates"])
         mytemplate = template_lookup.get_template("editadsenseform.html")
         return mytemplate.render(user=user, saved_adsense=saved_adsense)
-    #@+node:2015.20140824143250.2078: *3* parse_config
     def parse_config(self, filename):
         #filename = "pygroup_config"
         if not os.path.isfile(data_dir+filename):
@@ -696,13 +667,11 @@ class Pygroup(object):
         site_closed = config_data[4].split(":")[1]
         read_only = config_data[5].split(":")[1]
         return password, adsense, anonymous, mail_suffix, site_closed, read_only
-    #@+node:2014fall.20140821113240.3128: *3* logout
     @cherrypy.expose
     def logout(self, *args, **kwargs):
         cherrypy.session.delete()
         return "已經登出!<br /><a href='/'>Go to main page</a><br />"
         #raise cherrypy.HTTPRedirect("")
-    #@+node:2014fall.20140821113240.3129: *3* taskeditform
     @cherrypy.expose
     def taskeditform(self, id=None, *args, **kwargs):
         user = self.printuser()
@@ -734,7 +703,6 @@ class Pygroup(object):
             except:
                 db.close()
                 return "error! Not authorized!"
-    #@+node:2014fall.20140821113240.3130: *3* taskedit
     @cherrypy.expose
     def taskedit(self, id=None, type=None, name=None, content=None, *args, **kwargs):
         # check user and data owner
@@ -746,14 +714,13 @@ class Pygroup(object):
             return "<a href='/'>Go to main page</a><br /><br />error, site is read only!"
         if user == "anonymous" and anonymous != "yes":
             raise cherrypy.HTTPRedirect("login")
-        db.connect()
+        try:
+            db.connect()
+        except:
+            time.sleep(0.300)
+            db.connect()
         data = Task.select().where(Task.id==int(id)).get()
         now = datetime.datetime.now(pytz.timezone('Asia/Taipei')).strftime('%Y-%m-%d %H:%M:%S')
-        
-        # Python 3.x:
-        #import html.parser
-        #html_parser = html.parser.HTMLParser()
-        #content = html_parser.unescape(content)
         # 過濾資料
         content = content.replace('\n', '')
         valid_tags = ['a', 'br', 'h1', 'h2', 'h3', 'p', 'div', 'hr', 'img', 'iframe', 'li', 'ul', 'b', 'ol', 'pre']
@@ -769,7 +736,8 @@ class Pygroup(object):
                 db.close()
                 return "error! Not authorized!"
             else:
-                query = Task.update(type=type, name=name, content=content, time=str(now)).where(id==int(id))
+                # 請注意這裡曾經犯了 where(id==int(id) 的重大錯誤, 讓所有資料在 update 時只留下一筆資料
+                query = Task.update(type=type, name=name, content=str(content), time=str(now)).where(Task.id==int(id))
                 query.execute()
                 output += "<a href='/'>Go to main page</a><br />"
                 output +="<a href='/taskeditform?id="+str(id)+"'>繼續編輯</a><br /><br />"
@@ -786,7 +754,7 @@ class Pygroup(object):
             query = Task.update(type=type, name=name, content=str(content), time=str(now)).where(Task.id==int(id))
             query.execute()
             output += "<a href='/'>Go to main page</a><br />"
-            output +="<a href='/taskeditform?id="+str(database.last_insert_id)+"'>繼續編輯</a><br /><br />"
+            output +="<a href='/taskeditform?id="+str(id)+"'>繼續編輯</a><br /><br />"
             output += '''以下資料已經更新:<br /><br />
             owner:'''+data.owner+'''<br />
             name:'''+name+'''<br />
@@ -795,10 +763,9 @@ class Pygroup(object):
             content:'''+str(content)+'''<br /><br />
             <a href='/'>Go to main page</a><br />
     '''
-            output +="<a href='/taskeditform?id="+str(database.last_insert_id)+"'>繼續編輯</a><br />"
+            output +="<a href='/taskeditform?id="+str(id)+"'>繼續編輯</a><br />"
         db.close()
         return output
-    #@+node:2014fall.20140821113240.3131: *3* taskdeleteform
     @cherrypy.expose
     def taskdeleteform(self, id=None, *args, **kwargs):
         user = self.printuser()
@@ -863,7 +830,6 @@ class Pygroup(object):
             except:
                 db.close()
                 return "error! 無法正確查詢資料, Not authorized!"
-    #@+node:2014fall.20140821113240.3132: *3* taskdelete
     @cherrypy.expose
     def taskdelete(self, id=None, type=None, name=None, content=None, *args, **kwargs):
         # check user and data owner
@@ -920,7 +886,6 @@ class Pygroup(object):
     '''
         db.close()
         return output
-    #@+node:2014fall.20140821113240.3133: *3* tasksearchform
     # 不允許使用者直接呼叫 tasksearchform
     def tasksearchform(self, *args, **kwargs):
         user = self.printuser()
@@ -928,8 +893,6 @@ class Pygroup(object):
         # 必須要從 templates 目錄取出 tasksearchform.html
         mytemplate = template_lookup.get_template("tasksearchform.html")
         return mytemplate.render(user=user)
-    #@-others
-#@-others
 ########################### 4. 安排啟動設定
 # 配合程式檔案所在目錄設定靜態目錄或靜態檔案
 application_conf = {
@@ -983,4 +946,3 @@ if __name__ == '__main__':
         cherrypy.server.socket_host = '127.0.0.1'
         '''
         cherrypy.quickstart(root, config = application_conf)
-#@-leo

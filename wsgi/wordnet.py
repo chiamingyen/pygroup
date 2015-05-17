@@ -1,14 +1,8 @@
-#@+leo-ver=5-thin
-#@+node:2015.20140902161836.3788: * @file wordnet.py
 #coding: utf-8
 
 
 
-#@@language python
-#@@tabwidth -4
 
-#@+<<declarations>>
-#@+node:2015.20140902161836.3789: ** <<declarations>> (wordnet)
 import os
 import sys
 import cherrypy
@@ -30,25 +24,18 @@ else:
     # 表示程式在近端執行
     download_root_dir = _curdir + "/local_data/"
     data_dir = _curdir + "/local_data/"
-#@-<<declarations>>
-#@+others
-#@+node:2015.20140902161836.3790: ** class MyCheck
 class MyCheck(object):
     _cp_config = {
         'tools.sessions.on': True
     }
 
-    #@+others
-    #@+node:2015.20140902161836.3791: *3* nl2br
     def nl2br(self, string, is_xhtml= True ):
         if is_xhtml:
             return string.replace('\n','<br />\n')
         else :
             return string.replace('\n','<br>\n')
-    #@+node:2015.20140902161836.3792: *3* printcwd
     def printcwd(self):
         return cwd
-    #@+node:2015.20140902161836.3793: *3* doCheck
     printcwd.exposed = True
 
     def doCheck(self, word=None):
@@ -77,7 +64,6 @@ class MyCheck(object):
         output += "<br /><a href=\"/\">首頁</a>|<a href=\"./\">重新查詢</a>"
 
         return output
-    #@+node:2015.20140902161836.3794: *3* index
     doCheck.exposed = True
 
     def index(self):
@@ -95,9 +81,7 @@ class MyCheck(object):
  <br /><a href="/">首頁</a>
 </body>
 </html>'''	
-    #@-others
     index.exposed = True
-#@-others
 if __name__ == '__main__':
     '''
     # 指定程式執行的連接埠號, 內定為 8080
@@ -111,4 +95,3 @@ if __name__ == '__main__':
         application = cherrypy.Application(MyCheck())
     else:
         cherrypy.quickstart(MyCheck())
-#@-leo
